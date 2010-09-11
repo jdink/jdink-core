@@ -10,7 +10,11 @@ public class AbstractJDinkView implements JDinkView {
 	}
 
 	@Override
-	public void init(JDinkContext context) {
+	public void init(JDinkContext context, Object viewInitParameter) {
+	}
+
+	@Override
+	public void onBeforeLoad(JDinkContext context) {
 	}
 
 	@Override

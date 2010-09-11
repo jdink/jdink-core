@@ -133,8 +133,6 @@ import de.siteof.jdink.model.JDinkSprite;
 import de.siteof.jdink.script.JDinkScriptFile;
 import de.siteof.jdink.script.JDinkScriptInstance;
 import de.siteof.jdink.util.FileUtil;
-import de.siteof.jdink.util.debug.JDinkObjectOutputUtil;
-import de.siteof.jdink.util.debug.JDinkXStreamObjectOutput;
 import de.siteof.jdink.view.ColorConstants;
 import de.siteof.jdink.view.JDinkView;
 import de.siteof.jdink.view.JDinkViewFactory;
@@ -147,6 +145,8 @@ import de.siteof.task.ThreadPoolTaskManager;
  * <p>Main controller of the JDink application</p>
  */
 public class JDinkApp {
+
+	private static final Log log	= LogFactory.getLog(JDinkApp.class);
 
 	private static final String DINK_CONFIGURATION_PROPERTY_NAME	= "dink.configuration";
 
@@ -167,10 +167,14 @@ public class JDinkApp {
 
 	private Timer timer;
 
-	private static final Log log	= LogFactory.getLog(JDinkApp.class);
-
+	private transient Object viewInitParameter;
 
 	public JDinkApp() {
+		this(null);
+	}
+
+	public JDinkApp(Object viewInitParameter) {
+		this.viewInitParameter = viewInitParameter;
 		updateFrameTask = new RunnableTask(new Runnable() {
 			public void run() {
 				try {
@@ -369,9 +373,11 @@ public class JDinkApp {
 		context.setFontColors(initFontColors(new int[16]));
 		context.setTextBorderColor(getColor(8, 14, 21));
 
-		JDinkView view = JDinkViewFactory.getInstance().createView();
-		view.init(context);
+		JDinkView view = JDinkViewFactory.getInstance().createView(this.viewInitParameter);
+		view.init(context, this.viewInitParameter);
 		context.setView(view);
+
+		this.viewInitParameter = null;
 
 		Properties properties	= new Properties();
 		InputStream in	= new FileInputStream(dinkConfigurationFile);
@@ -409,17 +415,10 @@ public class JDinkApp {
 		context.setImageLoader(view.getImageLoader());
 
 		context.setGameId(fileDmod.getName());
-		JDinkObjectOutputUtil.setObjectOutput(new JDinkXStreamObjectOutput(
-				new File("./dump", context.getGameId())));
-
-		//loadMap();
-		if (true) {
-			//return;
-		}
+		context.getView().onBeforeLoad(context);
 
 		this.context.getView().setSplashImage(context.getImage("tiles/Splash.bmp"));
 		this.updateView();
-//		imageCanvas.repaint();
 
 		Map<JDinkInteractionType, JDinkInteractionHandler> handlers =
 			new HashMap<JDinkInteractionType, JDinkInteractionHandler>();
