@@ -76,7 +76,10 @@ public class JDinkScriptFunctionCall extends AbstractJDinkScriptCall {
 		}
 		JDinkFunction function = this.function;
 		if (function == null) {
-			function = thisValue.getScriptFile().getFunctionByName(this.getFunctionName());
+			JDinkScriptFile scriptFile = thisValue.getScriptFile();
+			if (scriptFile != null) {
+				function = thisValue.getScriptFile().getFunctionByName(this.getFunctionName());
+			}
 			if (function == null) {
 				function = parentExecutionContext.getContext().getFunction(this.getFunctionName());
 			}

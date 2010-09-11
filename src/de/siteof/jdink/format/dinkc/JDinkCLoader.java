@@ -81,12 +81,12 @@ public class JDinkCLoader extends AbstractLoader {
 	public static class SyntaxException extends RuntimeException {
 
 		private static final long serialVersionUID = 1L;
-		
-		private String text;
-		private String line;
-		private int lineNo;
-		private int column;
-		private String token;
+
+		private final String text;
+		private final String line;
+		private final int lineNo;
+		private final int column;
+		private final String token;
 
 
 		public SyntaxException(String text, String line, int lineNo, int column, String token) {
@@ -148,16 +148,16 @@ public class JDinkCLoader extends AbstractLoader {
 	private static final String ROUND_BRAKET_END_TOKEN = ")";
 
 	private static final String NEGATIVE_NUMBER_PREFIX = "-";
-	
+
 	private static final String QUOTE_BEGIN_STRING = "\"";
 	private static final String QUOTE_END_STRING = "\"";
 
 	private JDinkContext context;
-	private String separatingChars;
-	private String operatorChars;
+	private final String separatingChars;
+	private final String operatorChars;
 
 	private ParseContext currentParseContext;
-	private Stack<ParseContext> parseContextStack;
+	private final Stack<ParseContext> parseContextStack;
 
 	private String previousToken;
 	private StringBuffer tempString;
@@ -166,7 +166,7 @@ public class JDinkCLoader extends AbstractLoader {
 	private int currentColumn;
 	private boolean relaxedParsing = true;
 
-	private JDinkScriptFile scriptFile;
+	private final JDinkScriptFile scriptFile;
 	private final Map<String, Integer> operatorMap;
 	private final Map<String, Integer> modificatorMap;
 	private final Map<String, Integer> prefixSetModificatorMap;
@@ -347,7 +347,7 @@ public class JDinkCLoader extends AbstractLoader {
 		this.pushParseContext();
 		currentParseContext.setCall(call);
 	}
-	
+
 	protected JDinkScriptCall getPreviousCall() {
 		JDinkScriptCall result = null;
 		JDinkScriptBlock block = this.currentParseContext.getBlock();
@@ -623,7 +623,7 @@ public class JDinkCLoader extends AbstractLoader {
 						currentParseContext.setState(STATE_CALL_END);
 						break;
 					}
-					
+
 					// test current token
 					if (token.equals(STATEMENT_END_TOKEN)) {
 						if (currentParseContext.getState() == STATE_IF_THEN_STATEMENT_BODY_STEP2) {
@@ -944,7 +944,7 @@ public class JDinkCLoader extends AbstractLoader {
 							call.addArgument(choice);
 							choiceArguments.add(call);
 						} else {
-							choiceArguments.add(choice);							
+							choiceArguments.add(choice);
 						}
 					}
 					return;
@@ -953,7 +953,7 @@ public class JDinkCLoader extends AbstractLoader {
 			}
 		}
 	}
-	
+
 	private void processArgumentEnd() {
 		if (previousToken != null) {
 			if (currentParseContext.getCall() != null) {
@@ -965,7 +965,12 @@ public class JDinkCLoader extends AbstractLoader {
 		}
 		this.processOperators();
 	}
-	
+
+
+	public Object parseStatement(int lineNo, String s) {
+		return this.parseCondition(lineNo, s);
+	}
+
 	protected Object parseCondition(int lineNo, String s) {
 		s = s.trim();
 		if ((s.startsWith(ROUND_BRAKET_BEGIN_TOKEN)) && (s.endsWith(ROUND_BRAKET_END_TOKEN))) {
@@ -976,7 +981,7 @@ public class JDinkCLoader extends AbstractLoader {
 			@Override
 			public Resource getResource() {
 				return JDinkCLoader.this.getResource();
-			}			
+			}
 		};
 		dinkCLoader.setContext(context);
 		dinkCLoader.lineNo = lineNo;
