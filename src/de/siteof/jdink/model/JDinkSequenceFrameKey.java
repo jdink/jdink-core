@@ -4,15 +4,15 @@ package de.siteof.jdink.model;
  * <p>Key to identify a frame</p>
  */
 public class JDinkSequenceFrameKey {
-	
+
 	private final int sequenceNumber;
 	private final int frameNumber;
-	
+
 	public JDinkSequenceFrameKey(int sequenceNumber, int frameNumber) {
 		this.sequenceNumber = sequenceNumber;
 		this.frameNumber = frameNumber;
 	}
-	
+
 	public static JDinkSequenceFrameKey getInstance(int sequenceNumber, int frameNumber) {
 		return new JDinkSequenceFrameKey(sequenceNumber, frameNumber);
 	}
@@ -46,6 +46,14 @@ public class JDinkSequenceFrameKey {
 		if (sequenceNumber != other.sequenceNumber)
 			return false;
 		return true;
+	}
+
+	public int getSequenceNumber() {
+		return sequenceNumber;
+	}
+
+	public int getFrameNumber() {
+		return frameNumber;
 	}
 
 }

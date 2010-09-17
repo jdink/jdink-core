@@ -20,6 +20,7 @@ import de.siteof.jdink.model.JDinkItem;
 import de.siteof.jdink.model.JDinkMapTransition;
 import de.siteof.jdink.model.JDinkPlayer;
 import de.siteof.jdink.model.JDinkSprite;
+import de.siteof.jdink.script.util.JDinkScriptUtil;
 
 /**
  * <p>Brain: 1</p>
@@ -30,7 +31,26 @@ public class JDinkPlayerBrain extends AbstractJDinkBrain {
 
 	@Override
 	public void update(JDinkContext context, JDinkSprite sprite) {
-		if (!this.processBehaviours(context, sprite)) {
+		boolean processed = false;
+		// TODO find where this is being done in the original game
+		int life = context.getGlobalVariables().life.getInt(context);
+		sprite.setHitPoints(life);
+		if (!processed) {
+			processed = this.processDamage(context, sprite);
+			int updatedLife = sprite.getHitPoints();
+			context.getGlobalVariables().life.setInt(context, updatedLife);
+			if ((updatedLife <= 0) && (updatedLife != life)) {
+				try {
+					JDinkScriptUtil.callStatelessScript(context, "dinfo", "die");
+				} catch (Throwable e) {
+					log.warn("[update] failed to execute dinfo.die due to " + e, e);
+				}
+			}
+		}
+		if (!processed) {
+			processed = this.processBehaviours(context, sprite);
+		}
+		if (!processed) {
 			if (!sprite.isBusy()) {
 				sprite.setBusy(true);
 				try {
@@ -202,26 +222,16 @@ public class JDinkPlayerBrain extends AbstractJDinkBrain {
 			sequenceNumber = sprite.getBaseIdle() + sprite.getDirectionIndex();
 		} else {
 			// no base idle set
-			sequenceNumber = sprite.getBaseWalk() + sprite.getDirectionIndex();
+//			sequenceNumber = sprite.getBaseWalk() + sprite.getDirectionIndex();
+			sequenceNumber = 0;
 		}
-		if (sequenceNumber != sprite.getAnimationSequenceNumber()) {
+		if ((sequenceNumber > 0) && (sequenceNumber != sprite.getAnimationSequenceNumber())) {
 			if ((sprite.getAnimationSequenceNumber() == 0) ||
 					(in_this_base(sprite.getAnimationSequenceNumber(), sprite.getBaseWalk())) ||
 					(in_this_base(sprite.getAnimationSequenceNumber(), sprite.getBaseIdle()))) {
 				setAnimationSequence(context, sprite, sequenceNumber);
 			}
-//			sprite.setAnimationSequenceNumber(sequenceNumber);
-//	    	sprite.setAnimationFrameNumber(0);
-////			sprite.setSequence(context.getSequence(sequenceNumber, true));
-////			sprite.resetFrameNumber();
-//			sprite.setFrameDelay(0);
-//			sprite.setNextAnimationTime(0);
 			context.getController().setChanged(true);
-		} else {
-			if ((deltaX != 0) || (deltaY != 0)) {
-//				sprite.nextFrame();
-//				context.getController().setChanged(true);
-			}
 		}
 		if (directionIndex > 0) {
 			JDinkMapTransition transition = context.getController().getMapTransition(context, sprite);
@@ -283,7 +293,7 @@ public class JDinkPlayerBrain extends AbstractJDinkBrain {
 //						if (sequenceNumber != sprite.getAnimationSequenceNumber()) {
 //							setAnimationSequence(sprite, context, sequenceNumber);
 //						}
-						processHit(context, sprite);
+						processUseWeapon(context, sprite);
 //						if (!context.getInteractionManager().interact(
 //								JDinkInteractionType.HIT, context, sprite)) {
 //						}
@@ -295,7 +305,7 @@ public class JDinkPlayerBrain extends AbstractJDinkBrain {
 		}
 	}
 
-	private void processHit(JDinkContext context, JDinkSprite sprite) {
+	private void processUseWeapon(JDinkContext context, JDinkSprite sprite) {
 		int itemNumber = context.getGlobalVariables().currentWeapon.getInt(context);
 		JDinkPlayer player = context.getCurrentPlayer();
 		if (player == null) {
@@ -305,7 +315,7 @@ public class JDinkPlayerBrain extends AbstractJDinkBrain {
 
 		if (item != null) {
 			try {
-				log.info("[processHit] calling use");
+				log.info("[processUseWeapon] calling use");
 				item.use(context);
 			} catch (Throwable e) {
 				log.error("use failed due to " + e, e);
@@ -315,6 +325,60 @@ public class JDinkPlayerBrain extends AbstractJDinkBrain {
 
 	private void showItemMenu(JDinkContext context) {
 		JDinkItemMenuBrain.getInstance().showItemMenu(context);
+	}
+
+	@Override
+	protected boolean processDamage(JDinkContext context, JDinkSprite sprite) {
+		boolean result = false;
+		int damage = sprite.getDamage();
+		if (damage > 0) {
+			int hitPoints = sprite.getHitPoints();
+			if (hitPoints > 0) {
+				showDamage(context, sprite);
+				hitPoints = Math.max(0, sprite.getHitPoints() - damage);
+				sprite.setHitPoints(hitPoints);
+				if (hitPoints == 0) {
+					callDieScript(context, sprite);
+					// TODO do something if the brain was changed to a people brain (16)?
+				}
+			}
+			sprite.setDamage(0);
+		}
+		return result;
+		/*
+		 *
+	if  (spr[h].damage > 0)
+    {
+        //got hit
+        //SoundPlayEffect( 1,3000, 800 );
+        if (spr[h].hitpoints > 0)
+        {
+            draw_damage(h);
+            if (spr[h].damage > spr[h].hitpoints) spr[h].damage = spr[h].hitpoints;
+            spr[h].hitpoints -= spr[h].damage;
+
+            if (spr[h].hitpoints < 1)
+            {
+                //they killed it
+                check_for_kill_script(h);
+
+                if (spr[h].brain == 16)
+                {
+                    if (spr[h].dir == 0) spr[h].dir = 3;
+                    spr[h].brain = 0;
+                    change_dir_to_diag(&spr[h].dir);
+                    add_kill_sprite(h);
+                    spr[h].active = false;
+                }
+                return;
+
+            }
+        }
+        spr[h].damage = 0;
+
+    }
+
+		 */
 	}
 
 }

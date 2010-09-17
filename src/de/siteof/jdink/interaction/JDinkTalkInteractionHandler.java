@@ -10,6 +10,7 @@ import de.siteof.jdink.collision.JDinkCollisionTestType;
 import de.siteof.jdink.collision.JDinkSpriteCollision;
 import de.siteof.jdink.geom.JDinkRectangle;
 import de.siteof.jdink.model.JDinkContext;
+import de.siteof.jdink.model.JDinkDirectionIndexConstants;
 import de.siteof.jdink.model.JDinkSprite;
 import de.siteof.jdink.script.JDinkScriptFunction;
 import de.siteof.jdink.script.JDinkScriptInstance;
@@ -28,20 +29,20 @@ public class JDinkTalkInteractionHandler implements JDinkInteractionHandler {
 		int amount = 50;
 		int amounty = 35;
 		switch (directionIndex) {
-		case JDinkSprite.RIGHT:
+		case JDinkDirectionIndexConstants.RIGHT:
 			x2 += amount;
 			break;
-		case JDinkSprite.LEFT:
+		case JDinkDirectionIndexConstants.LEFT:
 			x1 -= amount;
 			break;
-		case JDinkSprite.DOWN:
+		case JDinkDirectionIndexConstants.DOWN:
 			y2 += amounty;
 			break;
-		case JDinkSprite.UP:
+		case JDinkDirectionIndexConstants.UP:
 			y1 -= amounty;
 			break;
 		}
-		
+
 		int border = 10;
 		JDinkRectangle r = JDinkRectangle.between(x1 - border, y1 - border, x2 + border, y2 + border);
 		List<JDinkCollision> collisions = context.getCollisionTester().getCollisionsAt(

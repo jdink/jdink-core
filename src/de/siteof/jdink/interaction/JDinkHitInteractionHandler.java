@@ -10,15 +10,16 @@ import de.siteof.jdink.collision.JDinkCollisionTestType;
 import de.siteof.jdink.collision.JDinkSpriteCollision;
 import de.siteof.jdink.geom.JDinkRectangle;
 import de.siteof.jdink.model.JDinkContext;
+import de.siteof.jdink.model.JDinkDirectionIndexConstants;
 import de.siteof.jdink.model.JDinkSprite;
 import de.siteof.jdink.script.JDinkScriptFunction;
 import de.siteof.jdink.script.JDinkScriptInstance;
 
-public class JDinkHitInteractionHandler implements JDinkInteractionHandler {
+public class JDinkHitInteractionHandler extends AbstractJDinkInteractionHandler {
 
-	private static final Log log	= LogFactory.getLog(JDinkHitInteractionHandler.class);
+	private static final Log log = LogFactory.getLog(JDinkHitInteractionHandler.class);
 
-	
+
 	@Override
 	public boolean interact(JDinkContext context, JDinkSprite sprite) {
 		int x1 = sprite.getX();
@@ -30,16 +31,16 @@ public class JDinkHitInteractionHandler implements JDinkInteractionHandler {
 		int amount = 50;
 		int amounty = 35;
 		switch (directionIndex) {
-		case JDinkSprite.RIGHT:
+		case JDinkDirectionIndexConstants.RIGHT:
 			x2 += amount;
 			break;
-		case JDinkSprite.LEFT:
+		case JDinkDirectionIndexConstants.LEFT:
 			x1 -= amount;
 			break;
-		case JDinkSprite.DOWN:
+		case JDinkDirectionIndexConstants.DOWN:
 			y2 += amounty;
 			break;
-		case JDinkSprite.UP:
+		case JDinkDirectionIndexConstants.UP:
 			y1 -= amounty;
 			break;
 		}
@@ -54,6 +55,7 @@ public class JDinkHitInteractionHandler implements JDinkInteractionHandler {
 			if (collision instanceof JDinkSpriteCollision) {
 				JDinkSpriteCollision spriteCollision = (JDinkSpriteCollision) collision;
 				JDinkSprite otherSprite = spriteCollision.getSprite();
+				otherSprite.setLastHitSpriteNumber(sprite.getSpriteNumber());
 				JDinkScriptInstance scriptInstance = otherSprite.getScriptInstance();
 				if (scriptInstance != null) {
 					JDinkScriptFunction function = scriptInstance.getFunctionByName("hit");
@@ -68,6 +70,11 @@ public class JDinkHitInteractionHandler implements JDinkInteractionHandler {
 						}
 					}
 					result = true;
+				}
+				int damage = 1 + sprite.getStrength() / 2 +
+						context.getRandom().nextInt(Math.max(1, sprite.getStrength() / 2));
+				if (hurtSprite(context, otherSprite, damage) > 0) {
+					randomBlood(context, sprite, sprite.getX(), sprite.getY() - 40);
 				}
 			}
 		}

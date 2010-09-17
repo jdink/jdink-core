@@ -4,7 +4,7 @@ import de.siteof.jdink.functions.JDinkExecutionContext;
 import de.siteof.jdink.model.JDinkSprite;
 
 /**
- * <p>Function: void sp_base_death(int spriteNumber, int baseDeath)</p>
+ * <p>Function: void sp_base_walk(int spriteNumber, int baseWalk)</p>
  */
 public class JDinkSpBaseWalkFunction extends AbstractJDinkSetSpriteIntValueFunction {
 

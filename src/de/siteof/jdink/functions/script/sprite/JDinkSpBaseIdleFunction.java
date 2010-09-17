@@ -4,24 +4,22 @@ import de.siteof.jdink.functions.JDinkExecutionContext;
 import de.siteof.jdink.model.JDinkSprite;
 
 /**
- * <p>Function: void sp_seq(int seq)</p>
- * <p>TODO difference to sp_pseq?</p>
+ * <p>Function: void sp_base_idle(int spriteNumber, int baseIdle)</p>
  */
-public class JDinkSpSeqFunction extends AbstractJDinkSetSpriteIntValueNoMinusOneFunction {
+public class JDinkSpBaseIdleFunction extends AbstractJDinkSetSpriteIntValueFunction {
 
 	private static final long serialVersionUID = 1L;
 
 	@Override
 	protected int getValue(JDinkExecutionContext executionContext,
 			JDinkSprite sprite) {
-		return sprite.getAnimationSequenceNumber();
+		return sprite.getBaseIdle();
 	}
 
 	@Override
 	protected void setValue(JDinkExecutionContext executionContext,
 			JDinkSprite sprite, int value) {
-		sprite.setAnimationSequenceNumber(value);
-		sprite.setAutoReverse(false); // TODO
+		sprite.setBaseIdle(value);
 	}
 
 }

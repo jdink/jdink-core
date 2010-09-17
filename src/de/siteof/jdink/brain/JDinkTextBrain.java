@@ -1,9 +1,3 @@
-/*
- * Created on 29.01.2005
- *
- * TODO To change the template for this generated file go to
- * Window - Preferences - Java - Code Style - Code Templates
- */
 package de.siteof.jdink.brain;
 
 
@@ -20,10 +14,8 @@ import de.siteof.jdink.script.JDinkType;
 import de.siteof.jdink.script.JDinkVariable;
 
 /**
- * @author user
- *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * <p>Brain Number: 8</p>
+ * <p>Handles text.</p>
  */
 public class JDinkTextBrain extends AbstractJDinkBrain {
 
@@ -61,12 +53,13 @@ public class JDinkTextBrain extends AbstractJDinkBrain {
 	@Override
 	public void update(JDinkContext context, JDinkSprite sprite) {
 		log.debug("JDinkTextBrain.update");
+		automove(context, sprite, false);
 		JDinkScope spriteScope = requestSpriteScope(context, sprite);
 		JDinkVariable expiryDateVariable = spriteScope.getInternalVariable(EXPIRE_DATE_VAR_NAME);
 		String text = sprite.getText();
 		if ((expiryDateVariable == null) && (text != null)) {
 			long delay = 77 * Math.max(35, text.length());
-			log.info("delay=" + delay + ", text=[" + text + "]");
+//			log.info("delay=" + delay + ", text=[" + text + "]");
 			delay = context.getController().getDelay(delay);
 			Date expiryDate = new Date(context.getTime() + delay);
 			expiryDateVariable = new JDinkVariable();

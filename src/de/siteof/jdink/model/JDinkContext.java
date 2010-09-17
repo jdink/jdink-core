@@ -38,6 +38,7 @@ import de.siteof.jdink.script.JDinkScope;
 import de.siteof.jdink.script.JDinkScriptFile;
 import de.siteof.jdink.util.ArrayListMap;
 import de.siteof.jdink.util.CaseInsensitveHashMap;
+import de.siteof.jdink.util.IntegerHashMap;
 import de.siteof.jdink.util.IntegerMap;
 import de.siteof.jdink.util.ObjectCacheFactory;
 import de.siteof.jdink.view.ColorConstants;
@@ -59,7 +60,10 @@ public class JDinkContext {
 	private final Map<String, JDinkFunction> functionMap =
 		new CaseInsensitveHashMap<JDinkFunction>();
 	private JDinkFileManager fileManager;
-	private final IntegerMap<JDinkSequence> sequenceMap = new ArrayListMap<JDinkSequence>(new JDinkSequence[0]);
+	private final IntegerMap<JDinkSequence> sequenceMap =
+		new IntegerHashMap<JDinkSequence>();
+//	private final IntegerMap<JDinkSequence> sequenceMap =
+//		new ArrayListMap<JDinkSequence>(new JDinkSequence[0]);
 	private final Map<JDinkSequenceFrameKey, JDinkSequenceFrameAttributes> frameAttributesMap =
 		new HashMap<JDinkSequenceFrameKey, JDinkSequenceFrameAttributes>();
 	private JDinkScope globalScope = new JDinkScope();
@@ -443,6 +447,10 @@ public class JDinkContext {
 		return result;
 	}
 
+	public JDinkSequence getSequence(int sequenceNumber) {
+		return getSequence(sequenceNumber, false);
+	}
+
 	public JDinkSequence getSequence(int sequenceNumber, boolean create) {
 		JDinkSequence sequence = sequenceMap.get(sequenceNumber);
 		if ((sequence == null) && (create)) {
@@ -450,6 +458,17 @@ public class JDinkContext {
 			sequenceMap.put(sequenceNumber, sequence);
 		}
 		return sequence;
+	}
+
+	public Map<Integer, JDinkSequenceFrameAttributes> getFrameAttributeMapBySequenceNumber(int sequenceNumber) {
+		Map<Integer, JDinkSequenceFrameAttributes> result =
+			new HashMap<Integer, JDinkSequenceFrameAttributes>();
+		for (Map.Entry<JDinkSequenceFrameKey, JDinkSequenceFrameAttributes> entry: this.frameAttributesMap.entrySet()) {
+			if (entry.getKey().getSequenceNumber() == sequenceNumber) {
+				result.put(Integer.valueOf(entry.getKey().getFrameNumber()), entry.getValue());
+			}
+		}
+		return result;
 	}
 
 	public JDinkSequenceFrameAttributes getFrameAttributes(int sequenceNumber, int frameNumber, boolean create) {

@@ -20,6 +20,7 @@ public class JDinkLoadGameFunction extends AbstractJDinkFunction {
 		Integer slotNumber = toInteger(executionContext.getArgument(0), null);
 		assertNotNull(slotNumber, "load_game: slotNumber missing");
 		JDinkContext context = executionContext.getContext();
+		context.getController().waitForView(context);
 		JDinkSaveGameManager saveGameManager = JDinkSaveGameManager.getInstance(context);
 		JDinkSaveGame saveGame = saveGameManager.getSaveGame(context, slotNumber.intValue());
 		if (saveGameManager == null) {

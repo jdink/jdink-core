@@ -15,7 +15,7 @@ import de.siteof.jdink.view.ColorConstants;
 
 /**
  * <p>dink.ini method. Loads a sequence.</p>
- * 
+ *
  * <p>Signature: load_sequence imagePrefix sequenceNumber frameNumber offsetX offsetY hardX1 hardY1 hardX2 hardY2</p>
  */
 public class JDinkLoadSequenceFunction extends AbstractJDinkFunction {
@@ -97,6 +97,7 @@ public class JDinkLoadSequenceFunction extends AbstractJDinkFunction {
 			sequence.setBackgroundColor(backgroundColor);
 			sequence.setLazyLoader(new JDinkSequenceLazyLoader(
 					executionContext.getContext(),
+					sequenceNumber.intValue(),
 					fileNamePrefix,
 					offsetX,
 					offsetY,

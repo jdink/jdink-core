@@ -9,6 +9,7 @@ import de.siteof.jdink.collision.JDinkCollisionTestType;
 import de.siteof.jdink.format.map.JDinkMapSpritePlacement;
 import de.siteof.jdink.functions.JDinkFunction;
 import de.siteof.jdink.geom.JDinkPoint;
+import de.siteof.jdink.geom.JDinkRectangle;
 import de.siteof.jdink.geom.JDinkShape;
 import de.siteof.jdink.script.JDinkIntegerType;
 import de.siteof.jdink.script.JDinkScope;
@@ -20,23 +21,6 @@ import de.siteof.jdink.script.JDinkVariable;
  * <p>A sprite is a movable object.</p>
  */
 public class JDinkSprite {
-
-	@Deprecated
-	public static final int UP_LEFT = JDinkDirectionIndexConstants.UP_LEFT;
-	@Deprecated
-	public static final int UP = JDinkDirectionIndexConstants.UP;
-	@Deprecated
-	public static final int UP_RIGHT = JDinkDirectionIndexConstants.UP_RIGHT;
-	@Deprecated
-	public static final int LEFT = JDinkDirectionIndexConstants.LEFT;
-	@Deprecated
-	public static final int RIGHT = JDinkDirectionIndexConstants.RIGHT;
-	@Deprecated
-	public static final int DOWN_LEFT = JDinkDirectionIndexConstants.DOWN_LEFT;
-	@Deprecated
-	public static final int DOWN = JDinkDirectionIndexConstants.DOWN;
-	@Deprecated
-	public static final int DOWN_RIGHT = JDinkDirectionIndexConstants.DOWN_RIGHT;
 
 	/**
 	 * The spriteNumber is a unique id of the sprite.
@@ -97,7 +81,7 @@ public class JDinkSprite {
 	private int baseIdle;
 	private int baseAttack;
 	private int baseHit;
-	private int baseDeath;
+	private int baseDie;
 	private int directionIndex;
 	private int timing;
 	private int distance;
@@ -105,6 +89,7 @@ public class JDinkSprite {
 	private int experience;
 	private int defense;
 	private int strength;
+	private int damage;
 	private boolean reverse;
 	private boolean autoReverse;
 	private boolean positionAbsolute;
@@ -115,11 +100,20 @@ public class JDinkSprite {
 	 */
 	private long nextAnimationTime;
 
+	/**
+	 * Defines the time until when noTouch will automatically be set to false.
+	 */
+	private long noTouchTime;
+
 	private int hitPoints;
 	private int targetSpriteNumber;
+	private int lastHitSpriteNumber;
 	private boolean active = true;
 	private boolean visible = true;
 	private JDinkSprite parentSprite = null;
+
+	private int baseBloodSequenceNumber;
+	private int bloodSequenceCount;
 
 	/**
 	 * not used, behaviour is used instead
@@ -153,6 +147,8 @@ public class JDinkSprite {
 	private int level;
 
 	private final int layerNumber;
+
+	private JDinkRectangle textBounds;
 
 	public JDinkSprite(int layer, int spriteNumber) {
 		this.layerNumber = layer;
@@ -385,6 +381,11 @@ public class JDinkSprite {
 			result = 0;
 		}
 		return result;
+	}
+
+	public boolean hasTouchDamage() {
+		// TODO this should possibly changed to "!= -1"
+		return this.touchDamage > 0;
 	}
 
 	// plain getter/setter
@@ -837,12 +838,12 @@ public class JDinkSprite {
 		this.busy = busy;
 	}
 
-	public int getBaseDeath() {
-		return baseDeath;
+	public int getBaseDie() {
+		return baseDie;
 	}
 
-	public void setBaseDeath(int baseDeath) {
-		this.baseDeath = baseDeath;
+	public void setBaseDie(int baseDie) {
+		this.baseDie = baseDie;
 	}
 
 	public long getAttackWaitTime() {
@@ -851,5 +852,61 @@ public class JDinkSprite {
 
 	public void setAttackWaitTime(long attackWaitTime) {
 		this.attackWaitTime = attackWaitTime;
+	}
+
+	public long getNoTouchTime() {
+		return noTouchTime;
+	}
+
+	public void setNoTouchTime(long noTouchTime) {
+		this.noTouchTime = noTouchTime;
+	}
+
+	public int getLastHitSpriteNumber() {
+		return lastHitSpriteNumber;
+	}
+
+	public void setLastHitSpriteNumber(int lastHitSpriteNumber) {
+		this.lastHitSpriteNumber = lastHitSpriteNumber;
+	}
+
+	public int getDamage() {
+		return damage;
+	}
+
+	public void setDamage(int damage) {
+		this.damage = damage;
+	}
+
+	public int getBaseBloodSequenceNumber() {
+		return baseBloodSequenceNumber;
+	}
+
+	public void setBaseBloodSequenceNumber(int bloodSequenceNumber) {
+		this.baseBloodSequenceNumber = bloodSequenceNumber;
+	}
+
+	public int getBloodSequenceCount() {
+		return bloodSequenceCount;
+	}
+
+	public void setBloodSequenceCount(int bloodFrameCount) {
+		this.bloodSequenceCount = bloodFrameCount;
+	}
+
+	public JDinkRectangle getTextBounds() {
+		return textBounds;
+	}
+
+	public void setTextBounds(JDinkRectangle textBounds) {
+		this.textBounds = textBounds;
+	}
+
+	public boolean isBackground() {
+		return getLevel() < 0;
+	}
+
+	public void setBackground(boolean background) {
+		this.setLevel(-1);
 	}
 }

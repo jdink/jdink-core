@@ -15,9 +15,9 @@ public class JDinkOneTimeBackgroundBrain extends AbstractJDinkBrain {
 		JDinkController controller = context.getController();
 		if (sprite.getAnimationSequenceNumber() == 0) {
 //			controller.releaseSprite(sprite.getSpriteNumber());
-			if (sprite.getDepthHint() == 0) {
-//				sprite.setDepthHint(-1000);
-//				controller.notifyChanged(sprite, JDinkController.ALL_CHANGE);
+			if (!sprite.isBackground()) {
+				sprite.setBackground(true);
+				controller.notifyChanged(sprite, JDinkController.ALL_CHANGE);
 			}
 		}
 	}

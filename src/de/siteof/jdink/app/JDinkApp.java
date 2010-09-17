@@ -82,7 +82,8 @@ import de.siteof.jdink.functions.script.sprite.JDinkSayStopXYFunction;
 import de.siteof.jdink.functions.script.sprite.JDinkSayXYFunction;
 import de.siteof.jdink.functions.script.sprite.JDinkSpActiveFunction;
 import de.siteof.jdink.functions.script.sprite.JDinkSpBaseAttackFunction;
-import de.siteof.jdink.functions.script.sprite.JDinkSpBaseDeathFunction;
+import de.siteof.jdink.functions.script.sprite.JDinkSpBaseDieFunction;
+import de.siteof.jdink.functions.script.sprite.JDinkSpBaseIdleFunction;
 import de.siteof.jdink.functions.script.sprite.JDinkSpBaseWalkFunction;
 import de.siteof.jdink.functions.script.sprite.JDinkSpBrainFunction;
 import de.siteof.jdink.functions.script.sprite.JDinkSpBrainParam2Function;
@@ -146,7 +147,7 @@ import de.siteof.task.ThreadPoolTaskManager;
  */
 public class JDinkApp {
 
-	private static final Log log	= LogFactory.getLog(JDinkApp.class);
+	private static final Log log = LogFactory.getLog(JDinkApp.class);
 
 	private static final String DINK_CONFIGURATION_PROPERTY_NAME	= "dink.configuration";
 
@@ -483,7 +484,9 @@ public class JDinkApp {
 		context.addFunction("sp", new JDinkSpFunction());
 		context.addFunction("sp_active", new JDinkSpActiveFunction());
 		context.addFunction("sp_base_attack", new JDinkSpBaseAttackFunction());
-		context.addFunction("sp_base_death", new JDinkSpBaseDeathFunction());
+		context.addFunction("sp_base_death", new JDinkSpBaseDieFunction());
+		context.addFunction("sp_base_die", new JDinkSpBaseDieFunction());
+		context.addFunction("sp_base_idle", new JDinkSpBaseIdleFunction());
 		context.addFunction("sp_base_walk", new JDinkSpBaseWalkFunction());
 		context.addFunction("sp_brain", new JDinkSpBrainFunction());
 		context.addFunction("sp_brain_parm", new JDinkSpBrainParamFunction());
@@ -492,6 +495,7 @@ public class JDinkApp {
 		context.addFunction("sp_frame", new JDinkSpFrameFunction());
 		context.addFunction("sp_frame_delay", new JDinkSpFrameDelayFunction());
 		context.addFunction("sp_hard", new JDinkSpHardFunction());
+		context.addFunction("sp_hitpoints", new JDinkSpHitPointsFunction());
 		context.addFunction("sp_kill_wait", new JDinkSpKillWaitFunction());
 		context.addFunction("sp_nocontrol", new JDinkSpNoControlFunction());
 		context.addFunction("sp_nohit", new JDinkSpNoHitFunction());
@@ -515,7 +519,6 @@ public class JDinkApp {
 		context.addFunction("sp_distance", new JDinkSpDistanceFunction());
 		context.addFunction("sp_defense", new JDinkSpDefenseFunction());
 		context.addFunction("sp_strength", new JDinkSpStrengthFunction());
-		context.addFunction("sp_hitpoints", new JDinkSpHitPointsFunction());
 		context.addFunction("sp_exp", new JDinkSpExpFunction());
 		context.addFunction("sp_target", new JDinkSpTargetFunction());
 		context.addFunction("kill_game", new JDinkKillGameFunction());
@@ -542,6 +545,9 @@ public class JDinkApp {
 		context.addFunction("set_dink_speed", new JDinkSetDinkSpeedFunction());
 		context.addFunction("sp_range", new JDinkUnimplementedFunction("sp_range"));
 		context.addFunction("sp_attack_hit_sound", new JDinkUnimplementedFunction("sp_attack_hit_sound"));
+
+		// script_attach probably doesn't need to be implemented
+		context.addFunction("script_attach", new JDinkUnimplementedFunction("script_attach"));
 
 		// do we need that hardness attribute at all? it seems to be used for optimisation that we don't need
 //		context.addFunction("sp_hard", new JDinkUnimplementedFunction("sp_hard"));

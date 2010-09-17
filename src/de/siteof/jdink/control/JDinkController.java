@@ -119,8 +119,8 @@ public class JDinkController {
 
 	private final Map<Integer, Boolean> keyPressedMap = new HashMap<Integer, Boolean>();
 
-	private final double delayFactor = 0.25d;
-//	private double delayFactor = 1.0d;
+//	private final double delayFactor = 0.25d;
+	private final double delayFactor = 1.0d;
 
 	private final LoggingReentrantReadWriteLock rwl = new LoggingReentrantReadWriteLock();
 
@@ -399,7 +399,7 @@ public class JDinkController {
 		JDinkSequence sequence = context.getSequence(sprite.getAnimationSequenceNumber(), false);
 		JDinkMapSpritePlacement spritePlacement = sprite.getSpritePlacement();
 		if ((sprite.getAnimationSequenceNumber() > 0) &&
-				(sequence != null) && (sequence.getFrameCount() > 1) &&
+				(sequence != null) && (sequence.getFrameCount() > 0) &&
 				((spritePlacement == null) || (spritePlacement.getWarpMap() == 0)) &&
 				(sprite.getNextAnimationTime() < context.getTime())) {
 			float animationTimingFactor = 2.0f;
@@ -449,27 +449,27 @@ public class JDinkController {
 					}
 					if (end) {
 //						if (sequence.isAnimation()) {
-						if ((sequence.isAnimation()) && (!sprite.isReverse()) && (sprite.isAutoReverse())) {
-							// for some reasons reverse also means no animation
-							if (sprite.isAutoReverse()) {
-								if (sprite.isReverse()) {
-									animationFrameNumber = sequence.getNextFrameNumber(
-											sequence.getFirstFrameNumber());
-								} else {
-									animationFrameNumber = sequence.getPreviousFrameNumber(
-											sequence.getLastFrameNumber());
-								}
-								sprite.setReverse(!sprite.isReverse());
-							} else {
-								if (sprite.isReverse()) {
-									animationFrameNumber = sequence.getFrameCount();
-								} else {
-									animationFrameNumber = 1;
-								}
-							}
-							sprite.setAnimationFrameNumber(animationFrameNumber);
-							sprite.setFrameNumber(animationFrameNumber);
-						} else {
+//						if ((sequence.isAnimation()) && (!sprite.isReverse()) && (sprite.isAutoReverse()) && (false)) {
+//							// for some reasons reverse also means no animation
+//							if (sprite.isAutoReverse()) {
+//								if (sprite.isReverse()) {
+//									animationFrameNumber = sequence.getNextFrameNumber(
+//											sequence.getFirstFrameNumber());
+//								} else {
+//									animationFrameNumber = sequence.getPreviousFrameNumber(
+//											sequence.getLastFrameNumber());
+//								}
+//								sprite.setReverse(!sprite.isReverse());
+//							} else {
+//								if (sprite.isReverse()) {
+//									animationFrameNumber = sequence.getFrameCount();
+//								} else {
+//									animationFrameNumber = 1;
+//								}
+//							}
+//							sprite.setAnimationFrameNumber(animationFrameNumber);
+//							sprite.setFrameNumber(animationFrameNumber);
+//						} else {
 							if ((sprite.getSpriteNumber() == 1) && (sprite.getAnimationSequenceNumber() > 50)) {
 								log.info("[processAnimation] end of animation - s=" + sprite.getAnimationSequenceNumber() +
 										", f=" + sprite.getAnimationFrameNumber() +
@@ -487,7 +487,7 @@ public class JDinkController {
 							if (brain instanceof JDinkPlayerBrain) {
 								((JDinkPlayerBrain) brain).onAnimationSequenceEnd(context, sprite);
 							}
-						}
+//						}
 
 //						if ((sequence.isAnimation()) && (!sprite.isReverse())) {
 //							// for some reasons reverse also means no animation
@@ -844,6 +844,7 @@ public class JDinkController {
 						sprite.setEditorSpriteNumber(editorSpriteNumber);
 						sprite.setSpritePlacement(spritePlacement);
 						sprite.setFrameDelay(spritePlacement.getTimer());
+						sprite.setHitPoints(spritePlacement.getHitPoints());
 						sprite.setLevel(level);
 						if ((spritePlacement.getAltX1() != spritePlacement.getAltX2()) &&
 								(spritePlacement.getAltY1() != spritePlacement.getAltY2())) {

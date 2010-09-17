@@ -59,6 +59,10 @@ public class JDinkSpriteHelper {
 		sprite.setX(x);
 		sprite.setY(y);
 		this.setSpriteSequenceAndFrame(sprite, sequenceNumber, frameNumber);
+		sprite.setSpeed(1);
+		sprite.setTiming(33);
+		sprite.setSize(100);
+		sprite.setNoHardness(true);
 		sprite.setVisible(visible);
 		return sprite;
 	}

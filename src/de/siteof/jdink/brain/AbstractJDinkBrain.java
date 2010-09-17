@@ -11,12 +11,17 @@ import de.siteof.jdink.functions.JDinkExecutionContext;
 import de.siteof.jdink.functions.JDinkFunction;
 import de.siteof.jdink.functions.script.sprite.JDinkMoveFunction;
 import de.siteof.jdink.geom.JDinkRectangle;
+import de.siteof.jdink.geom.JDinkShape;
 import de.siteof.jdink.model.JDinkContext;
 import de.siteof.jdink.model.JDinkDirectionIndexConstants;
+import de.siteof.jdink.model.JDinkPlayer;
+import de.siteof.jdink.model.JDinkSequence;
 import de.siteof.jdink.model.JDinkSprite;
+import de.siteof.jdink.model.JDinkSpriteHelper;
 import de.siteof.jdink.script.JDinkScope;
 import de.siteof.jdink.script.JDinkScriptFunction;
 import de.siteof.jdink.script.JDinkScriptInstance;
+import de.siteof.jdink.util.JDinkDirectionUtil;
 import de.siteof.jdink.util.ObjectUtil;
 
 /**
@@ -271,10 +276,14 @@ public abstract class AbstractJDinkBrain implements JDinkBrain {
     	sprite.setAnimationFrameNumber(0);
 		sprite.setFrameDelay(0);
 		sprite.setNextAnimationTime(0);
-		sprite.setAutoReverse(true);
+//		sprite.setAutoReverse(true);
 	}
 
 	protected JDinkCollision automove(JDinkContext context, JDinkSprite sprite) {
+		return automove(context, sprite, true);
+	}
+
+	protected JDinkCollision automove(JDinkContext context, JDinkSprite sprite, boolean checkCollision) {
 	    char kindx,kindy;
 	    int speedx = 0;
 	    int speedy = 0;
@@ -319,12 +328,13 @@ public abstract class AbstractJDinkBrain implements JDinkBrain {
 
 	    JDinkCollision collision = null;
 	    if (speed > 0) {
-	    	collision = move(context, sprite, speed, kindx, kindy);
+	    	collision = move(context, sprite, speed, kindx, kindy, checkCollision);
 	    }
 	    return collision;
 	}
 
-	protected JDinkCollision move(JDinkContext context, JDinkSprite sprite, int amount, char kind,  char kindy) {
+	protected JDinkCollision move(JDinkContext context, JDinkSprite sprite, int amount, char kind, char kindy,
+			boolean checkCollision) {
 	    int mx = 0;
 	    int my = 0;
 	    boolean clearx;
@@ -389,9 +399,11 @@ public abstract class AbstractJDinkBrain implements JDinkBrain {
 	            my++;
 	        }
 
-			collision = (collisionTester.getCollisionAt(
-					JDinkCollisionTestType.WALK,
-					tempX, tempY, sprite));
+	        if (checkCollision) {
+				collision = (collisionTester.getCollisionAt(
+						JDinkCollisionTestType.WALK,
+						tempX, tempY, sprite));
+	        }
 			if (collision == null) {
 				x = tempX;
 				y = tempY;
@@ -740,5 +752,355 @@ public abstract class AbstractJDinkBrain implements JDinkBrain {
 		}
 	}
 
+	protected void showStatUpdateText(JDinkContext context, JDinkSprite sprite,
+			String text, int offsetX, int offsetY) {
+		JDinkSpriteHelper spriteHelper = context.getSpriteHelper();
+		int x = sprite.getX();
+		int y = sprite.getY();
+		JDinkShape spriteBounds = sprite.getBounds();
+		if (spriteBounds != null) {
+			JDinkRectangle r = spriteBounds.getBounds();
+			x = x + r.getX() + r.getWidth() / 5 + offsetX;
+			y = y + r.getY() - r.getHeight() / 3 + offsetY;
+		}
+		JDinkSprite statSprite = spriteHelper.newSprite(x, y, 0, 0, false);
+		spriteHelper.setSpriteBrain(statSprite, 8); // text brain
+		statSprite.setMy(-1);
+		statSprite.setDirectionIndex(JDinkDirectionIndexConstants.UP);
+		statSprite.setText(text);
+		statSprite.setTextBounds(JDinkRectangle.getInstance(
+				0, 0, 50, 50));
+		statSprite.setVisible(true);
+	}
+
+	protected void showDamage(JDinkContext context, JDinkSprite sprite) {
+		// this should show in white
+		showStatUpdateText(context, sprite,
+				"`%" + sprite.getDamage(), 0, 0);
+//		JDinkSpriteHelper spriteHelper = context.getSpriteHelper();
+//		int x = sprite.getX();
+//		int y = sprite.getY();
+//		JDinkShape spriteBounds = sprite.getBounds();
+//		if (spriteBounds != null) {
+//			JDinkRectangle r = spriteBounds.getBounds();
+//			x = x + r.getX() + r.getWidth() / 5;
+//			y = y + r.getY() - r.getHeight() / 3;
+//		}
+//		JDinkSprite damageSprite = spriteHelper.newSprite(x, y, 0, 0, false);
+//		spriteHelper.setSpriteBrain(damageSprite, 8); // text brain
+//		damageSprite.setMy(-1);
+//		damageSprite.setDirectionIndex(JDinkDirectionIndexConstants.UP);
+//		damageSprite.setText(Integer.toString(sprite.getDamage()));
+//		damageSprite.setTextBounds(JDinkRectangle.getInstance(
+//				0, 0, 50, 50));
+//		damageSprite.setVisible(true);
+/*
+    int crap2 = add_sprite(spr[h].x,spr[h].y,8,0,0);
+
+    spr[crap2].y -= k[seq[spr[h].pseq].frame[spr[h].pframe]].yoffset;
+    spr[crap2].x -= k[seq[spr[h].pseq].frame[spr[h].pframe]].xoffset;
+    spr[crap2].y -= k[seq[spr[h].pseq].frame[spr[h].pframe]].box.bottom / 3;
+    spr[crap2].x += k[seq[spr[h].pseq].frame[spr[h].pframe]].box.right / 5;
+
+    spr[crap2].speed = 1;
+    spr[crap2].hard = 1;
+    spr[crap2].brain_parm = h;
+    spr[crap2].my = -1;
+    spr[crap2].kill = 1000;
+    spr[crap2].dir = 8;
+    spr[crap2].damage = spr[h].damage;
+
+ */
+	}
+
+	protected boolean callDieScript(JDinkContext context, JDinkSprite sprite) {
+		boolean result = false;
+		JDinkScriptInstance scriptInstance = sprite.getScriptInstance();
+		if (scriptInstance != null) {
+			JDinkScriptFunction function = scriptInstance.getFunctionByName("die");
+			if (function != null) {
+				try {
+					scriptInstance.callFunction(context, function);
+				} catch (Throwable e) {
+					log.warn("[callDieScript] failed to execute die script due to " + e, e);
+				}
+				result = true;
+			}
+		}
+		return result;
+	}
+
+	protected int getDiagonalDirectionIndex(int directionIndex) {
+		int result;
+		switch (directionIndex) {
+		case JDinkDirectionIndexConstants.UP:
+			result = JDinkDirectionIndexConstants.UP_LEFT;
+			break;
+		case JDinkDirectionIndexConstants.DOWN:
+			result = JDinkDirectionIndexConstants.DOWN_RIGHT;
+			break;
+		case JDinkDirectionIndexConstants.LEFT:
+			result = JDinkDirectionIndexConstants.DOWN_LEFT;
+			break;
+		case JDinkDirectionIndexConstants.RIGHT:
+			result = JDinkDirectionIndexConstants.UP_RIGHT;
+			break;
+		default:
+			result = directionIndex;
+		}
+		return result;
+/*
+    if (*dir == 8) *dir = 7;
+    if (*dir == 4) *dir = 1;
+    if (*dir == 2) *dir = 3;
+    if (*dir == 6) *dir = 9;
+ */
+	}
+
+	protected void add_exp(JDinkContext context, JDinkSprite sprite,
+			int experience) {
+		add_exp(context, sprite, experience, true);
+	}
+
+	protected void add_exp(JDinkContext context, JDinkSprite sprite,
+			int experience, boolean checkLastHit) {
+		if (experience > 0) {
+			JDinkPlayer player = context.getCurrentPlayer();
+			if ((checkLastHit) && (sprite.getLastHitSpriteNumber() != player.getSpriteNumber())) {
+				log.info("lastHit is not player");
+			} else {
+				int currentExperience = context.getGlobalVariables().experience.getInt(context);
+				int updatedExperience = Math.min(99999, currentExperience + experience);
+				if (updatedExperience != currentExperience) {
+					context.getGlobalVariables().experience.setInt(context, updatedExperience);
+				}
+
+				// this should show in yellow, about 30px above the damage
+				showStatUpdateText(context, sprite,
+						"`$" + experience, 0, -30);
+			}
+		}
+/*
+    //redink1 fix - made work with all sprites when using add_exp DinkC command
+    if (addEvenIfNotLastSpriteHit == false)
+    {
+        if (spr[h].last_hit != 1) return;
+    }
+
+    if (num > 0)
+    {
+        //add experience
+
+
+        *pexper += num;
+
+
+        int crap2 = add_sprite(spr[h].x,spr[h].y,8,0,0);
+
+        spr[crap2].y -= k[seq[spr[h].pseq].frame[spr[h].pframe]].yoffset;
+        spr[crap2].x -= k[seq[spr[h].pseq].frame[spr[h].pframe]].xoffset;
+        spr[crap2].y -= k[seq[spr[h].pseq].frame[spr[h].pframe]].box.bottom / 3;
+        spr[crap2].x += k[seq[spr[h].pseq].frame[spr[h].pframe]].box.right / 5;
+        spr[crap2].y -= 30;
+        spr[crap2].speed = 1;
+        spr[crap2].hard = 1;
+        spr[crap2].brain_parm = 5000;
+        spr[crap2].my = -1;
+        spr[crap2].kill = 1000;
+        spr[crap2].dir = 8;
+        spr[crap2].damage = num;
+
+
+        if (*pexper > 99999) *pexper = 99999;
+
+
+    }
+
+ */
+	}
+
+	protected void add_kill_sprite(JDinkContext context, JDinkSprite sprite) {
+		int directionIndex = sprite.getDirectionIndex();
+		if ((directionIndex < 0) || (directionIndex > 9)) {
+			directionIndex = 3;
+			sprite.setDirectionIndex(directionIndex);
+		}
+
+		int base = sprite.getBaseDie();
+		if (base <= 0) {
+			if (context.getSequence(sprite.getBaseWalk() + 5) != null) {
+				base = sprite.getBaseWalk();
+				directionIndex = 5;
+			} else {
+				base = 164;
+				directionIndex = 0;
+			}
+		}
+
+		JDinkSequence sequence = context.getSequence(base + directionIndex);
+		if (sequence == null) {
+			directionIndex = JDinkDirectionUtil.getInvertedDirection(directionIndex);
+			sequence = context.getSequence(base + directionIndex);
+			if (sequence == null) {
+				log.info("no die sequence found for sprite, spriteNumber=" + sprite.getSpriteNumber());
+				directionIndex = JDinkDirectionIndexConstants.DOWN_RIGHT;
+			}
+		}
+
+		JDinkSpriteHelper spriteHelper = context.getSpriteHelper();
+		JDinkSprite killSprite = spriteHelper.newSprite(
+				sprite.getX(), sprite.getY(), base + directionIndex, 1, false);
+		if (base == 164) {
+			spriteHelper.setSpriteBrain(killSprite, 7); // one time
+		} else {
+			spriteHelper.setSpriteBrain(killSprite, 5); // one time background
+		}
+		killSprite.setSpeed(0);
+		killSprite.setBaseWalk(0);
+		killSprite.setAnimationSequenceNumber(base + directionIndex);
+		killSprite.setSize(sprite.getSize());
+		killSprite.setVisible(true);
+
+		this.add_exp(context, sprite, sprite.getExperience());
+		// TODO add_exp
+
+/*
+    int crap2 = add_sprite(spr[h].x,spr[h].y,5,base +dir,1);
+    spr[crap2].speed = 0;
+    spr[crap2].base_walk = 0;
+    spr[crap2].seq = base + dir;
+
+    if (base == 164) spr[crap2].brain = 7;
+
+    spr[crap2].size = spr[h].size;
+
+    add_exp(spr[h].exp, h);
+
+ */
+
+/*
+    if ( (spr[h].dir > 9) || (spr[h].dir < 1) )
+    {
+        Msg("Error:  Changing sprites dir from %d (!?) to 3.", spr[h].dir);
+        spr[h].dir = 3;
+
+    }
+
+
+    int dir = spr[h].dir;
+    int base = spr[h].base_die;
+
+    //Msg("Base die is %d", base);
+    if (base == -1)
+    {
+
+        if (seq[spr[h].base_walk+5].active == true)
+        {
+            add_exp(spr[h].exp, h);
+
+            int crap2 = add_sprite(spr[h].x,spr[h].y,5,spr[h].base_walk +5,1);
+            spr[crap2].speed = 0;
+            spr[crap2].seq = spr[h].base_walk + 5;
+            //redink1 added this so corpses are the same size
+            spr[crap2].size = spr[h].size;
+            return;
+        } else
+        {
+            dir = 0;
+            base = 164;
+
+        }
+    }
+
+
+
+    if (seq[base+dir].active == false)
+    {
+
+        if (dir == 1) dir = 9;
+        else if (dir == 3) dir = 7;
+        else if (dir == 7) dir = 3;
+        else if (dir == 9) dir = 1;
+
+        else if (dir == 4) dir = 6;
+        else if (dir == 6) dir = 4;
+        else if (dir == 8) dir = 2;
+        else if (dir == 2) dir = 8;
+
+
+    }
+    if (seq[base+dir].active == false)
+
+    {
+        Msg("Can't make a death sprite for dir %d!", base+dir);
+    }
+
+
+
+    int crap2 = add_sprite(spr[h].x,spr[h].y,5,base +dir,1);
+    spr[crap2].speed = 0;
+    spr[crap2].base_walk = 0;
+    spr[crap2].seq = base + dir;
+
+    if (base == 164) spr[crap2].brain = 7;
+
+    spr[crap2].size = spr[h].size;
+
+    add_exp(spr[h].exp, h);
+
+ */
+	}
+
+	protected boolean processDamage(JDinkContext context, JDinkSprite sprite) {
+		boolean result = false;
+		int damage = sprite.getDamage();
+		if (damage > 0) {
+			int hitPoints = sprite.getHitPoints();
+			if (hitPoints > 0) {
+				showDamage(context, sprite);
+				hitPoints = Math.max(0, sprite.getHitPoints() - damage);
+				sprite.setHitPoints(hitPoints);
+				if (hitPoints == 0) {
+					callDieScript(context, sprite);
+				}
+			}
+			sprite.setDamage(0);
+		}
+		return result;
+		/*
+		 *
+	if  (spr[h].damage > 0)
+    {
+        //got hit
+        //SoundPlayEffect( 1,3000, 800 );
+        if (spr[h].hitpoints > 0)
+        {
+            draw_damage(h);
+            if (spr[h].damage > spr[h].hitpoints) spr[h].damage = spr[h].hitpoints;
+            spr[h].hitpoints -= spr[h].damage;
+
+            if (spr[h].hitpoints < 1)
+            {
+                //they killed it
+                check_for_kill_script(h);
+
+                if (spr[h].brain == 16)
+                {
+                    if (spr[h].dir == 0) spr[h].dir = 3;
+                    spr[h].brain = 0;
+                    change_dir_to_diag(&spr[h].dir);
+                    add_kill_sprite(h);
+                    spr[h].active = false;
+                }
+                return;
+
+            }
+        }
+        spr[h].damage = 0;
+
+    }
+
+		 */
+	}
 
 }

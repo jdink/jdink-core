@@ -13,12 +13,17 @@ import de.siteof.jdink.loader.JDinkLazyLoader;
 import de.siteof.jdink.model.JDinkContext;
 import de.siteof.jdink.model.JDinkSequence;
 import de.siteof.jdink.model.JDinkSequenceFrame;
+import de.siteof.jdink.model.JDinkSequenceFrameAttributes;
 
 public class JDinkSequenceLazyLoader implements JDinkLazyLoader {
 
 	private static final long serialVersionUID = 1L;
 
+	private static final Log log = LogFactory
+			.getLog(JDinkLoadSequenceFunction.class);
+
 	private final JDinkContext context;
+	private final int sequenceNumber;
 	private final String fileNamePrefix;
 	private final Integer offsetX;
 	private final Integer offsetY;
@@ -30,13 +35,11 @@ public class JDinkSequenceLazyLoader implements JDinkLazyLoader {
 
 	private Map<Integer, JDinkSpriteInfo> spriteInfoMap;
 
-	private static final Log log = LogFactory
-			.getLog(JDinkLoadSequenceFunction.class);
-
-	public JDinkSequenceLazyLoader(JDinkContext context, String fileNamePrefix,
+	public JDinkSequenceLazyLoader(JDinkContext context, int sequenceNumber, String fileNamePrefix,
 			Integer offsetX, Integer offsetY, Integer hardX1, Integer hardY1,
 			Integer hardX2, Integer hardY2) {
 		this.context = context;
+		this.sequenceNumber = sequenceNumber;
 		this.fileNamePrefix = fileNamePrefix;
 		this.offsetX = offsetX;
 		this.offsetY = offsetY;
@@ -124,7 +127,41 @@ public class JDinkSequenceLazyLoader implements JDinkLazyLoader {
 					}
 					frameCount++;
 				} else {
+					// no file found
 					break;
+				}
+			}
+			Map<Integer, JDinkSequenceFrameAttributes> frameAttributeMap =
+				context.getFrameAttributeMapBySequenceNumber(sequenceNumber);
+			for (Map.Entry<Integer, JDinkSequenceFrameAttributes> entry: frameAttributeMap.entrySet()) {
+				int frameNumber = entry.getKey().intValue();
+				JDinkSequenceFrameAttributes attributes = entry.getValue();
+				if ((attributes.getSourceSequenceNumber() > 0) && (attributes.getSourceFrameNumber() >= 0)) {
+					JDinkSequence sourceSequence;
+					if (attributes.getSourceSequenceNumber() == sequenceNumber) {
+						sourceSequence = sequence;
+					} else {
+						sourceSequence = context.getSequence(attributes.getSourceSequenceNumber());
+					}
+					if (sourceSequence != null) {
+						// override frame
+						JDinkSequenceFrame sourceFrame = sourceSequence.getFrame(
+								attributes.getSourceFrameNumber(), false);
+						if (sourceFrame != null) {
+							JDinkSequenceFrame frame = sequence.getFrame(
+									frameNumber, true);
+							frame.setFileName(sourceFrame.getFileName());
+							frame.setImage(sourceFrame.getImage());
+							//sequence.setFrame(frameNumber, sourceFrame);
+						} else {
+							log.warn("[load] source frame not found, sourceSequenceNumer=" +
+									attributes.getSourceSequenceNumber() +
+									", sourceFrameNumber=" + attributes.getSourceFrameNumber());
+						}
+					} else {
+						log.warn("[load] source sequence not found, sourceSequenceNumer=" +
+								attributes.getSourceSequenceNumber());
+					}
 				}
 			}
 			if ((offsetX != null) && (offsetX.intValue() != 0)
@@ -136,11 +173,11 @@ public class JDinkSequenceLazyLoader implements JDinkLazyLoader {
 						.intValue(), hardY1.intValue(), hardX2.intValue(),
 						hardY2.intValue()));
 			} else {
-				if (log.isInfoEnabled()) {
-					log
-							.info("offset/hard  values not set, attempting to calculate them. "
-									+ "fileNamePrefix=[" + fileNamePrefix + "]");
-				}
+//				if (log.isInfoEnabled()) {
+//					log
+//							.info("offset/hard  values not set, attempting to calculate them. "
+//									+ "fileNamePrefix=[" + fileNamePrefix + "]");
+//				}
 				/*
 				for (int iFrame = 1; iFrame <= frameCount; iFrame++) {
 					JDinkSequenceFrame frame = sequence.getFrame(iFrame, false);

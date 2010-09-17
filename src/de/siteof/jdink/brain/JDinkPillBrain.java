@@ -1,6 +1,10 @@
 package de.siteof.jdink.brain;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import de.siteof.jdink.model.JDinkContext;
+import de.siteof.jdink.model.JDinkDirectionIndexConstants;
 import de.siteof.jdink.model.JDinkSprite;
 
 /**
@@ -9,11 +13,20 @@ import de.siteof.jdink.model.JDinkSprite;
  */
 public class JDinkPillBrain extends AbstractJDinkBrain {
 
+	private static final Log log = LogFactory.getLog(JDinkPillBrain.class);
+
 	@Override
 	public void update(JDinkContext context, JDinkSprite sprite) {
 		// TODO Auto-generated method stub
 		// TODO pill_brain
-		if (!this.processBehaviours(context, sprite)) {
+		boolean processed = false;
+		if (!processed) {
+			processed = this.processDamage(context, sprite);
+		}
+		if (!processed) {
+			processed = this.processBehaviours(context, sprite);
+		}
+		if (!processed) {
 			if (!sprite.isFrozen()) {
 				processPillMovement(context, sprite);
 			} else if (sprite.getBaseIdle() > 0) {
@@ -212,6 +225,73 @@ recal:
 	private void processPillMovement(JDinkContext context, JDinkSprite sprite) {
 		processMovement(context, sprite);
 //		processRandomMovement(context, sprite);
+	}
+
+	@Override
+	protected boolean processDamage(JDinkContext context, JDinkSprite sprite) {
+		boolean result = false;
+		int damage = sprite.getDamage();
+		if (damage > 0) {
+			int hitPoints = sprite.getHitPoints();
+			if (hitPoints > 0) {
+				showDamage(context, sprite);
+				hitPoints = Math.max(0, sprite.getHitPoints() - damage);
+				log.info("[processDamage] damage=[" + damage + "], hitPoints=[" + hitPoints + "]");
+				sprite.setHitPoints(hitPoints);
+				if (hitPoints == 0) {
+					log.info("killed sprite");
+					int brainNumber = sprite.getBrainNumber();
+					callDieScript(context, sprite);
+					if (brainNumber == sprite.getBrainNumber()) {
+						int directionIndex = sprite.getDirectionIndex();
+						if (directionIndex == 0) {
+							directionIndex = JDinkDirectionIndexConstants.DOWN_RIGHT;
+						}
+						directionIndex = getDiagonalDirectionIndex(directionIndex);
+						this.add_kill_sprite(context, sprite);
+						context.getController().releaseSprite(sprite);
+					}
+					// TODO do something if the brain was changed to a people brain (16)?
+				}
+			} else {
+				log.info("[processDamage] no hitPoints, damage=[" + damage + "]");
+			}
+			sprite.setDamage(0);
+		}
+		return result;
+		/*
+		 *
+    if  (spr[h].damage > 0)
+    {
+        //got hit
+        //SoundPlayEffect( 1,3000, 800 );
+        if (spr[h].hitpoints > 0)
+        {
+            draw_damage(h);
+            if (spr[h].damage > spr[h].hitpoints) spr[h].damage = spr[h].hitpoints;
+            spr[h].hitpoints -= spr[h].damage;
+
+            if (spr[h].hitpoints < 1)
+            {
+                //they killed it
+                check_for_kill_script(h);
+
+                if (spr[h].brain == 9)
+                {
+                    if (spr[h].dir == 0) spr[h].dir = 3;
+                    change_dir_to_diag(&spr[h].dir);
+                    add_kill_sprite(h);
+                    spr[h].active = false;
+                }
+                return;
+
+            }
+        }
+        spr[h].damage = 0;
+
+    }
+
+		 */
 	}
 
 }

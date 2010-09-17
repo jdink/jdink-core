@@ -3,13 +3,14 @@ package de.siteof.jdink.model.view;
 import java.util.Map;
 
 import de.siteof.jdink.geom.JDinkPoint;
+import de.siteof.jdink.geom.JDinkRectangle;
 import de.siteof.jdink.geom.JDinkShape;
 import de.siteof.jdink.model.JDinkSequence;
 import de.siteof.jdink.model.JDinkSequenceFrame;
 import de.siteof.jdink.model.JDinkSprite;
 
 public final class JDinkSpriteDisplayInformation {
-	
+
 	private final int spriteNumber;
 	private final int sequenceNumber;
 	private final JDinkSequence sequence;
@@ -26,7 +27,8 @@ public final class JDinkSpriteDisplayInformation {
 	private final int layerNumber;
 	private final boolean noClip;
 	private final boolean fill;
-	
+	private final JDinkRectangle textBounds;
+
 	private JDinkSpriteDisplayInformation(
 			JDinkSprite sprite,
 			Map<Integer, JDinkSpriteDisplayInformation> spriteDisplayInformationMap) {
@@ -53,15 +55,16 @@ public final class JDinkSpriteDisplayInformation {
 		this.layerNumber = sprite.getLayerNumber();
 		this.noClip = sprite.isNoClip();
 		this.fill = sprite.isFill();
+		this.textBounds = sprite.getTextBounds();
 	}
-	
+
 	public static JDinkSpriteDisplayInformation forSprite(
 			JDinkSprite sprite,
 			Map<Integer, JDinkSpriteDisplayInformation> spriteDisplayInformationMap) {
 		JDinkSpriteDisplayInformation result = spriteDisplayInformationMap.get(
 				Integer.valueOf(sprite.getSpriteNumber()));
 		if (result == null) {
-			result = new JDinkSpriteDisplayInformation(sprite, spriteDisplayInformationMap);			
+			result = new JDinkSpriteDisplayInformation(sprite, spriteDisplayInformationMap);
 		}
 		return result;
 	}
@@ -128,6 +131,10 @@ public final class JDinkSpriteDisplayInformation {
 
 	public JDinkPoint getOffset() {
 		return offset;
+	}
+
+	public JDinkRectangle getTextBounds() {
+		return textBounds;
 	}
 
 }

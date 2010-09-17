@@ -1,9 +1,3 @@
-/*
- * Created on 28.01.2005
- *
- * TODO To change the template for this generated file go to
- * Window - Preferences - Java - Code Style - Code Templates
- */
 package de.siteof.jdink.functions.ini;
 
 import de.siteof.jdink.functions.JDinkExecutionContext;
@@ -11,10 +5,9 @@ import de.siteof.jdink.functions.JDinkExecutionContext;
 
 
 /**
- * @author user
+ * <p>dink.ini method. Loads a sequence.</p>
  *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * <p>Signature: load_sequence_now imagePrefix sequenceNumber frameNumber offsetX offsetY hardX1 hardY1 hardX2 hardY2</p>
  */
 public class JDinkLoadSequenceNowFunction extends JDinkLoadSequenceFunction {
 

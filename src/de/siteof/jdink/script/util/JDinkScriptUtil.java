@@ -16,7 +16,14 @@ public final class JDinkScriptUtil {
 
 	public static boolean callStatelessScript(
 			JDinkContext context, String scriptName) throws Throwable {
-		return callStatelessScript(context, scriptName, null, new Object[0]);
+		return callStatelessScript(context, scriptName, null,
+				JDinkScriptInstance.EMPTY_ARGUMENTS);
+	}
+
+	public static boolean callStatelessScript(
+			JDinkContext context, String scriptName, String functionName) throws Throwable {
+		return callStatelessScript(context, scriptName, functionName,
+				JDinkScriptInstance.EMPTY_ARGUMENTS);
 	}
 
 	public static boolean callStatelessScript(
