@@ -109,8 +109,12 @@ public abstract class AbstractJDinkBrain implements JDinkBrain {
 		this.changeDirection(context, sprite, dir1, sprite.getBaseWalk());
 	}
 
+	private final int getDiagonalSpeed(int speed) {
+		return Math.min(1, (speed * 2) / 3);
+	}
+
 	protected void changeDirection(JDinkContext context, JDinkSprite sprite,
-			int dir1, int base) {
+			int directionIndex, int baseSequenceNumber) {
 	    int hspeed;
 	    int speed = sprite.getSpeed();
 	    if ((sprite != null) && (sprite.getBrainNumber() != 9) && (sprite.getBrainNumber() != 10)) {
@@ -125,149 +129,127 @@ public abstract class AbstractJDinkBrain implements JDinkBrain {
 	            speed = hspeed;
 	        }
 	    }
-	    int old_seq = sprite.getAnimationSequenceNumber();
-	    int seq = old_seq;
+	    int diagonalSpeed = getDiagonalSpeed(speed);
+	    int oldSequenceNumber = sprite.getAnimationSequenceNumber();
+	    int sequenceNumber = oldSequenceNumber;
 	    int mx = sprite.getMx();
 	    int my = sprite.getMy();
-	    sprite.setDirectionIndex(dir1);
+	    sprite.setDirectionIndex(directionIndex);
 
-	    if (dir1 == 1) {
-	    	mx = (0 - speed ) + (speed / 3);
-	        my = speed - (speed / 3);
+	    if (directionIndex == JDinkDirectionIndexConstants.DOWN_LEFT) {
+	    	mx = (-diagonalSpeed);
+	        my = diagonalSpeed;
 
-	        if (base != -1) {
-	        	seq = base + 1;
-	        	if (!isValidSequence(context, seq)) {
-	        		seq = base + 9;
+	        if (baseSequenceNumber != -1) {
+	        	sequenceNumber = baseSequenceNumber + directionIndex;
+	        	if (!isValidSequence(context, sequenceNumber)) {
+	        		sequenceNumber = baseSequenceNumber + JDinkDirectionIndexConstants.UP_RIGHT;
 	        	}
 	        }
-	    }
-
-	    if (dir1 == 2) {
+	    } else if (directionIndex == JDinkDirectionIndexConstants.DOWN) {
 	        mx = 0;
 	        my = speed;
-	        if (base != -1) {
-	            seq = base + 2;
-	        	if ((!isValidSequence(context, seq)) &&
-	        			(isValidSequence(context, base + 3))) {
-	        		seq = base + 3;
+	        if (baseSequenceNumber != -1) {
+	            sequenceNumber = baseSequenceNumber + directionIndex;
+	        	if ((!isValidSequence(context, sequenceNumber)) &&
+	        			(isValidSequence(context, baseSequenceNumber + JDinkDirectionIndexConstants.DOWN_RIGHT))) {
+	        		sequenceNumber = baseSequenceNumber + JDinkDirectionIndexConstants.DOWN_RIGHT;
 	        	}
-	        	if ((!isValidSequence(context, seq)) &&
-	        			(isValidSequence(context, base + 1))) {
-	        		seq = base + 1;
-	        	}
-	        }
-	    }
-
-	    if (dir1 == 3)
-	    {
-	        mx = speed - (speed / 3);
-	        my = speed - (speed / 3);
-	        if (base != -1) {
-	            seq = base + 3;
-	        	if (!isValidSequence(context, seq)) {
-	        		seq = base + 7;
+	        	if ((!isValidSequence(context, sequenceNumber)) &&
+	        			(isValidSequence(context, baseSequenceNumber + JDinkDirectionIndexConstants.DOWN_LEFT))) {
+	        		sequenceNumber = baseSequenceNumber + JDinkDirectionIndexConstants.DOWN_LEFT;
 	        	}
 	        }
-	    }
-
-	    if (dir1 == 4)
-	    {
-	        mx = (0 - speed);
+	    } else if (directionIndex == JDinkDirectionIndexConstants.DOWN_RIGHT) {
+	        mx = diagonalSpeed;
+	        my = diagonalSpeed;
+	        if (baseSequenceNumber != -1) {
+	            sequenceNumber = baseSequenceNumber + directionIndex;
+	        	if (!isValidSequence(context, sequenceNumber)) {
+	        		sequenceNumber = baseSequenceNumber + JDinkDirectionIndexConstants.UP_LEFT;
+	        	}
+	        }
+	    } else if (directionIndex == JDinkDirectionIndexConstants.LEFT) {
+	        mx = (-speed);
 	        my = 0;
-	        if (base != -1) {
-	            seq = base + 4;
-	        	if ((!isValidSequence(context, seq)) &&
-	        			(isValidSequence(context, base + 7))) {
-	        		seq = base + 7;
+	        if (baseSequenceNumber != -1) {
+	            sequenceNumber = baseSequenceNumber + directionIndex;
+	        	if ((!isValidSequence(context, sequenceNumber)) &&
+	        			(isValidSequence(context, baseSequenceNumber + JDinkDirectionIndexConstants.UP_LEFT))) {
+	        		sequenceNumber = baseSequenceNumber + JDinkDirectionIndexConstants.UP_LEFT;
 	        	}
-	        	if ((!isValidSequence(context, seq)) &&
-	        			(isValidSequence(context, base + 1))) {
-	        		seq = base + 1;
+	        	if ((!isValidSequence(context, sequenceNumber)) &&
+	        			(isValidSequence(context, baseSequenceNumber + JDinkDirectionIndexConstants.DOWN_LEFT))) {
+	        		sequenceNumber = baseSequenceNumber + JDinkDirectionIndexConstants.DOWN_LEFT;
 	        	}
 	        }
-	    }
-
-	    if (dir1 == 6)
-	    {
+	    } else if (directionIndex == JDinkDirectionIndexConstants.RIGHT) {
 	        mx = speed;
 	        my = 0;
-	        if (base != -1) {
-	            seq = base + 6;
+	        if (baseSequenceNumber != -1) {
+	            sequenceNumber = baseSequenceNumber + directionIndex;
 
-	        	if ((!isValidSequence(context, seq)) &&
-	        			(isValidSequence(context, base + 3))) {
-	        		seq = base + 3;
+	        	if ((!isValidSequence(context, sequenceNumber)) &&
+	        			(isValidSequence(context, baseSequenceNumber + JDinkDirectionIndexConstants.DOWN_RIGHT))) {
+	        		sequenceNumber = baseSequenceNumber + JDinkDirectionIndexConstants.DOWN_RIGHT;
 	        	}
 
-	        	if ((!isValidSequence(context, seq)) &&
-	        			(isValidSequence(context, base + 9))) {
-	        		seq = base + 9;
+	        	if ((!isValidSequence(context, sequenceNumber)) &&
+	        			(isValidSequence(context, baseSequenceNumber + JDinkDirectionIndexConstants.UP_RIGHT))) {
+	        		sequenceNumber = baseSequenceNumber + JDinkDirectionIndexConstants.UP_RIGHT;
 	        	}
 	        }
-	    }
-
-	    if (dir1 == 7)
-	    {
-	        mx = (0 - speed) + (speed / 3);
-	        my = (0 - speed)+ (speed / 3);
-	        if (base != -1)
+	    } else if (directionIndex == JDinkDirectionIndexConstants.UP_LEFT) {
+	        mx = (-diagonalSpeed);
+	        my = (-diagonalSpeed);
+	        if (baseSequenceNumber != -1)
 	        {
-	            seq = base + 7;
+	            sequenceNumber = baseSequenceNumber + directionIndex;
 
-	        	if (!isValidSequence(context, seq)) {
-	        		seq = base + 3;
+	        	if (!isValidSequence(context, sequenceNumber)) {
+	        		sequenceNumber = baseSequenceNumber + JDinkDirectionIndexConstants.DOWN_RIGHT;
 	        	}
 	        }
-	    }
-	    if (dir1 == 8)
-	    {
+	    } else if (directionIndex == JDinkDirectionIndexConstants.UP) {
 	        mx = 0;
-	        my = (0 - speed);
-	        if (base != -1) {
-	            seq = base + 8;
+	        my = (-speed);
+	        if (baseSequenceNumber != -1) {
+	            sequenceNumber = baseSequenceNumber + directionIndex;
 
-	        	if ((!isValidSequence(context, seq)) &&
-	        			(isValidSequence(context, base + 7))) {
-	        		seq = base + 7;
+	        	if ((!isValidSequence(context, sequenceNumber)) &&
+	        			(isValidSequence(context, baseSequenceNumber + JDinkDirectionIndexConstants.UP_LEFT))) {
+	        		sequenceNumber = baseSequenceNumber + JDinkDirectionIndexConstants.UP_LEFT;
 	        	}
 
-	        	if ((!isValidSequence(context, seq)) &&
-	        			(isValidSequence(context, base + 9))) {
-	        		seq = base + 9;
+	        	if ((!isValidSequence(context, sequenceNumber)) &&
+	        			(isValidSequence(context, baseSequenceNumber + JDinkDirectionIndexConstants.UP_RIGHT))) {
+	        		sequenceNumber = baseSequenceNumber + JDinkDirectionIndexConstants.UP_RIGHT;
 	        	}
 	        }
-	    }
-
-
-	    if (dir1 == 9)
-	    {
-	        mx = speed- (speed / 3);
-	        my = (0 - speed)+ (speed / 3);
-	        if (base != -1)
+	    } else if (directionIndex == JDinkDirectionIndexConstants.UP_RIGHT) {
+	        mx = diagonalSpeed;
+	        my = (-diagonalSpeed);
+	        if (baseSequenceNumber != -1)
 	        {
-	            seq = base + 9;
-	        	if (!isValidSequence(context, seq)) {
-	        		seq = base + 1;
+	            sequenceNumber = baseSequenceNumber + directionIndex;
+	        	if (!isValidSequence(context, sequenceNumber)) {
+	        		sequenceNumber = baseSequenceNumber + JDinkDirectionIndexConstants.DOWN_LEFT;
 	        	}
 	        }
 	    }
 
-    	if (!isValidSequence(context, seq)) {
-    		seq = old_seq;
+	    if (!isValidSequence(context, sequenceNumber)) {
+    		sequenceNumber = oldSequenceNumber;
     	}
 
     	sprite.setMx(mx);
     	sprite.setMy(my);
 
-	    if (old_seq != seq) {
-//	    	sprite.setAnimationSequenceNumber(seq);
-////			sprite.setSequence(context.getSequence(seq, true));
-//	    	sprite.setAnimationFrameNumber(0);
-////			sprite.resetFrameNumber();
-//			sprite.setFrameDelay(0);
-//			sprite.setNextAnimationTime(0);
-			setAnimationSequence(context, sprite, seq);
+	    if (oldSequenceNumber != sequenceNumber) {
+	    	if (!isValidSequence(context, sequenceNumber)) {
+	    		log.warn("[changeDirection] sequence not found, sequenceNumber=[" + sequenceNumber + "]");
+	    	}
+			setAnimationSequence(context, sprite, sequenceNumber);
 	    }
 	}
 
@@ -276,6 +258,8 @@ public abstract class AbstractJDinkBrain implements JDinkBrain {
     	sprite.setAnimationFrameNumber(0);
 		sprite.setFrameDelay(0);
 		sprite.setNextAnimationTime(0);
+		// TODO for some reasons it is necessary to set the original sequence number in certain circumstances
+		sprite.setOriginalAnimationSequenceNumber(sequenceNumber);
 //		sprite.setAutoReverse(true);
 	}
 
@@ -508,13 +492,32 @@ public abstract class AbstractJDinkBrain implements JDinkBrain {
 		}
 	}
 
-	protected void autoRepeatWalkAnimation(JDinkContext context, JDinkSprite sprite) {
+	protected boolean autoRepeatAnimation(JDinkContext context, JDinkSprite sprite,
+			int baseSequenceNumber) {
+		boolean result;
 		if ((sprite.getAnimationSequenceNumber() == 0) &&
-				(in_this_base(sprite.getOriginalAnimationSequenceNumber(), sprite.getBaseWalk()))) {
+				(baseSequenceNumber >= 0) &&
+				(in_this_base(sprite.getOriginalAnimationSequenceNumber(), baseSequenceNumber))) {
 			sprite.setAnimationSequenceNumber(sprite.getOriginalAnimationSequenceNumber());
 			sprite.setAnimationFrameNumber(0);
 			context.getController().notifyChanged(sprite, JDinkController.CONTROL_CHANGE);
+			result = true;
+		} else {
+			result = false;
 		}
+		return result;
+	}
+
+	protected boolean autoRepeatAnimation(JDinkContext context, JDinkSprite sprite) {
+		boolean result;
+		if (sprite.getAnimationSequenceNumber() == 0) {
+			result = (((sprite.getMx() != 0) || (sprite.getMy() != 0)) &&
+					(autoRepeatAnimation(context, sprite, sprite.getBaseWalk()))) ||
+					autoRepeatAnimation(context, sprite, sprite.getBaseIdle());
+		} else {
+			result = false;
+		}
+		return result;
 	}
 
 	protected DistanceAndDirection getDistanceAndDirection(
@@ -652,7 +655,7 @@ public abstract class AbstractJDinkBrain implements JDinkBrain {
 						this.processTarget(context, sprite, targetSprite, movementBounds);
 						result = true;
 					}
-					autoRepeatWalkAnimation(context, sprite);
+					autoRepeatAnimation(context, sprite);
 				}
 			}
 		}
@@ -753,7 +756,7 @@ public abstract class AbstractJDinkBrain implements JDinkBrain {
 	        sprite.setMoveWaitTime(time + 400);
 	        changeDirection(context, sprite, autoreverse_diag(context, sprite));
 	    }
-		autoRepeatWalkAnimation(context, sprite);
+		autoRepeatAnimation(context, sprite);
 	    context.getController().notifyChanged(sprite, JDinkController.ALL_CHANGE);
 	}
 

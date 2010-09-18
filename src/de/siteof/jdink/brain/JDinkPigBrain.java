@@ -1,5 +1,6 @@
 package de.siteof.jdink.brain;
 
+import de.siteof.jdink.control.JDinkController;
 import de.siteof.jdink.model.JDinkContext;
 import de.siteof.jdink.model.JDinkSprite;
 
@@ -185,7 +186,7 @@ start:
 	        sprite.setMoveWaitTime(getTime(context) + 400);
 	        changeDirection(context, sprite, autoreverse_diag(context, sprite));
 	    }
-	    context.getController().setChanged(true);
+	    context.getController().notifyChanged(sprite, JDinkController.ALL_CHANGE);
 	}
 
 }

@@ -14,6 +14,19 @@ public final class JDinkScriptUtil {
 		// prevent instantiation
 	}
 
+	public static boolean callScript(
+			JDinkContext context, JDinkScriptInstance scriptInstance, String functionName) throws Throwable {
+		boolean result = false;
+		if (scriptInstance != null) {
+			JDinkScriptFunction function = scriptInstance.getFunctionByName(functionName);
+			if (function != null) {
+				scriptInstance.callFunction(context, function);
+				result = true;
+			}
+		}
+		return result;
+	}
+
 	public static boolean callStatelessScript(
 			JDinkContext context, String scriptName) throws Throwable {
 		return callStatelessScript(context, scriptName, null,

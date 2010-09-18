@@ -107,6 +107,7 @@ public class JDinkSprite {
 
 	private int hitPoints;
 	private int targetSpriteNumber;
+	private int followSpriteNumber;
 	private int lastHitSpriteNumber;
 	private boolean active = true;
 	private boolean visible = true;
@@ -908,5 +909,13 @@ public class JDinkSprite {
 
 	public void setBackground(boolean background) {
 		this.setLevel(-1);
+	}
+
+	public int getFollowSpriteNumber() {
+		return followSpriteNumber;
+	}
+
+	public void setFollowSpriteNumber(int followSpriteNumber) {
+		this.followSpriteNumber = followSpriteNumber;
 	}
 }

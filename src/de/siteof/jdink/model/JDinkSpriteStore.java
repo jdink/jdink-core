@@ -144,6 +144,7 @@ public class JDinkSpriteStore {
 			JDinkSprite previousSprite = spriteList.set(spriteNumber, null);
 			if (previousSprite != null) {
 				allocatedSpriteCount--;
+				previousSprite.setActive(false);
 				result = true;
 			}
 		}

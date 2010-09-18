@@ -16,6 +16,7 @@ import org.apache.commons.logging.LogFactory;
 
 import de.siteof.jdink.brain.JDinkButtonBrain;
 import de.siteof.jdink.brain.JDinkDefaultBrain;
+import de.siteof.jdink.brain.JDinkDuckBrain;
 import de.siteof.jdink.brain.JDinkMouseBrain;
 import de.siteof.jdink.brain.JDinkOneTimeBackgroundBrain;
 import de.siteof.jdink.brain.JDinkOneTimeBrain;
@@ -127,7 +128,6 @@ import de.siteof.jdink.interaction.JDinkTalkInteractionHandler;
 import de.siteof.jdink.interaction.JDinkTouchInteractionHandler;
 import de.siteof.jdink.loader.JDinkFileManager;
 import de.siteof.jdink.model.JDinkContext;
-import de.siteof.jdink.util.FileUtil;
 import de.siteof.jdink.view.JDinkView;
 import de.siteof.jdink.view.JDinkViewFactory;
 import de.siteof.task.ITask;
@@ -251,18 +251,6 @@ public class JDinkApp {
 	protected void loadMap() throws Throwable {
 		JDinkMapLoader loader = new JDinkMapLoader();
 		loader.load(context.getFileManager().getResource("map.dat"));
-	}
-
-	private File getFile(File parent, String path) {
-		File result;
-		path	= path.replace('\\', '/');
-		if ((path.startsWith("/")) || (path.indexOf(":") >= 0)) {
-			result	= new File(path);
-		} else {
-			result	= new File(parent, path);
-		}
-		result	= FileUtil.getFileIgnoreCase(result);
-		return result;
 	}
 
 	private void updateView() {
@@ -409,7 +397,7 @@ public class JDinkApp {
 		// see update_frame for list of brain types
 		context.addBrain(0, new JDinkDefaultBrain());
 		context.addBrain(1, new JDinkPlayerBrain());
-		context.addBrain(3, new JDinkUnimplementedBrain(3, "duck"));
+		context.addBrain(3, new JDinkDuckBrain());
 		context.addBrain(4, new JDinkPigBrain());
 		context.addBrain(5, new JDinkOneTimeBackgroundBrain());
 		context.addBrain(6, new JDinkRepeatBrain());
