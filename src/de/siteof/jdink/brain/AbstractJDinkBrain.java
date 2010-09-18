@@ -13,6 +13,7 @@ import de.siteof.jdink.functions.script.sprite.JDinkMoveFunction;
 import de.siteof.jdink.geom.JDinkRectangle;
 import de.siteof.jdink.geom.JDinkShape;
 import de.siteof.jdink.model.JDinkContext;
+import de.siteof.jdink.model.JDinkDirection;
 import de.siteof.jdink.model.JDinkDirectionIndexConstants;
 import de.siteof.jdink.model.JDinkPlayer;
 import de.siteof.jdink.model.JDinkSequence;
@@ -104,13 +105,34 @@ public abstract class AbstractJDinkBrain implements JDinkBrain {
 		return context.getController().getPlayerMapBounds();
 	}
 
-	protected void changeDirection(JDinkContext context, JDinkSprite sprite,
-			int dir1) {
-		this.changeDirection(context, sprite, dir1, sprite.getBaseWalk());
+	protected boolean isValidDirectionIndex(JDinkContext context, JDinkSprite sprite,
+			int directionIndex) {
+		int baseWalk = sprite.getBaseWalk();
+		return (JDinkDirection.isValid(directionIndex)) &&
+			((baseWalk <= 0) || (this.isValidSequence(context, baseWalk + directionIndex)));
+	}
+
+	protected boolean changeRandomDirection(
+			JDinkContext context, JDinkSprite sprite) {
+		boolean result;
+		// TODO keep trying until a valid direction index was found
+		int directionIndex = 1 + randomInt(context, 9);
+		if (isValidDirectionIndex(context, sprite, directionIndex)) {
+			this.changeDirection(context, sprite, directionIndex);
+			result = true;
+		} else {
+			result = false;
+		}
+		return result;
 	}
 
 	private final int getDiagonalSpeed(int speed) {
-		return Math.min(1, (speed * 2) / 3);
+		return (speed > 0 ? Math.max(1, (speed * 2) / 3) : 0);
+	}
+
+	protected void changeDirection(JDinkContext context, JDinkSprite sprite,
+			int directionIndex) {
+		this.changeDirection(context, sprite, directionIndex, sprite.getBaseWalk());
 	}
 
 	protected void changeDirection(JDinkContext context, JDinkSprite sprite,
@@ -458,7 +480,10 @@ public abstract class AbstractJDinkBrain implements JDinkBrain {
 	protected void autoChangeDirectionOnBounds(
 			JDinkContext context, JDinkSprite sprite, JDinkRectangle movementBounds) {
 		if (movementBounds != null) {
-		    if (sprite.getY() >= (movementBounds.getY() + movementBounds.getHeight())) {
+			int directionIndex = sprite.getDirectionIndex();
+		    if ((sprite.getY() >= (movementBounds.getY() + movementBounds.getHeight())) &&
+		    		(JDinkDirection.isDown(directionIndex))) {
+		    	// hit the bottom border
 		    	if (this.randomInt(context, 2) == 0) {
 		    		changeDirection(context, sprite, JDinkDirectionIndexConstants.UP_RIGHT);
 		    	} else {
@@ -466,7 +491,9 @@ public abstract class AbstractJDinkBrain implements JDinkBrain {
 		    	}
 		    }
 
-		    if (sprite.getX() >= (movementBounds.getX() + movementBounds.getWidth())) {
+		    if ((sprite.getX() >= (movementBounds.getX() + movementBounds.getWidth())) &&
+		    		(JDinkDirection.isRight(directionIndex))) {
+		    	// hit the right border
 		    	if (this.randomInt(context, 2) == 0) {
 		    		changeDirection(context, sprite, JDinkDirectionIndexConstants.UP_LEFT);
 		    	} else {
@@ -474,7 +501,9 @@ public abstract class AbstractJDinkBrain implements JDinkBrain {
 		    	}
 		    }
 
-		    if (sprite.getY() < movementBounds.getY()) {
+		    if ((sprite.getY() < movementBounds.getY()) &&
+		    		(JDinkDirection.isUp(directionIndex))) {
+		    	// hit the top border
 		    	if (this.randomInt(context, 2) == 0) {
 		    		changeDirection(context, sprite, JDinkDirectionIndexConstants.DOWN_RIGHT);
 		    	} else {
@@ -482,7 +511,9 @@ public abstract class AbstractJDinkBrain implements JDinkBrain {
 		    	}
 		    }
 
-		    if (sprite.getX() < movementBounds.getX()) {
+		    if ((sprite.getX() < movementBounds.getX()) &&
+		    		(JDinkDirection.isLeft(directionIndex))) {
+		    	// hit the left border
 		    	if (this.randomInt(context, 2) == 0) {
 		    		changeDirection(context, sprite, JDinkDirectionIndexConstants.UP_RIGHT);
 		    	} else {
@@ -582,17 +613,20 @@ public abstract class AbstractJDinkBrain implements JDinkBrain {
 		}
 	}
 
-	protected boolean processTargetMovement(
+	protected boolean processFollowMovement(
+			JDinkContext context, JDinkSprite sprite) {
+		// TODO implement me
+		return false;
+	}
+
+	protected final boolean processTargetMovement(
 			JDinkContext context, JDinkSprite sprite) {
 		return processTargetMovement(context, sprite, getDefaultMovementBounds(context, sprite));
 	}
 
-	protected boolean processTargetMovement(
+	protected final boolean processTargetMovement(
 			JDinkContext context, JDinkSprite sprite, JDinkRectangle movementBounds) {
 		boolean result = false;
-//		if (!result) {
-//			return result;
-//		}
 		int targetSpriteNumber = sprite.getTargetSpriteNumber();
 		JDinkSprite targetSprite = null;
 		if (targetSpriteNumber > 0) {
@@ -609,55 +643,7 @@ public abstract class AbstractJDinkBrain implements JDinkBrain {
 			}
 		}
 		if (targetSprite != null) {
-			if (in_this_base(sprite.getAnimationSequenceNumber(),
-					sprite.getBaseAttack())) {
-				// still attacking
-			} else {
-				int spriteDistance = sprite.getDistance();
-				if (spriteDistance == 0) {
-					spriteDistance = 5;
-					sprite.setDistance(spriteDistance);
-				}
-				long time = getTime(context);
-				DistanceAndDirection distanceResult = this.getDistanceAndDirection(
-						sprite, targetSprite);
-				if ((distanceResult.getDistance() < spriteDistance) &&
-						(sprite.getAttackWaitTime() < getTime(context))) {
-					if (sprite.getBaseAttack() > 0) {
-						DistanceAndDirection distanceResult2 = this.getDistanceAndDirection(
-								sprite, targetSprite, false);
-
-						sprite.setDirectionIndex(distanceResult2.getDirectionIndex());
-						sprite.setAnimationSequenceNumber(sprite.getBaseAttack() + sprite.getDirectionIndex());
-						sprite.setAnimationFrameNumber(0);
-
-						JDinkScriptInstance scriptInstance = sprite.getScriptInstance();
-						if (scriptInstance != null) {
-							JDinkScriptFunction function = scriptInstance.getFunctionByName("attack");
-							if (function != null) {
-								try {
-									scriptInstance.callFunction(context, function);
-								} catch (Throwable e) {
-									log.warn("[processTargetMovement] failed to execute attach script due to " + e, e);
-								}
-							} else {
-								sprite.setMoveWaitTime(time + (randomInt(context, 300) + 10));
-							}
-						}
-					    context.getController().notifyChanged(sprite, JDinkController.ALL_CHANGE);
-					    result = true;
-					}
-				}
-
-				if (!result) {
-					// not attacked
-					if (sprite.getMoveWaitTime() < time) {
-						this.processTarget(context, sprite, targetSprite, movementBounds);
-						result = true;
-					}
-					autoRepeatAnimation(context, sprite);
-				}
-			}
+			result = this.processTargetMovement(context, sprite, targetSprite, movementBounds);
 		}
 
 /*
@@ -720,6 +706,62 @@ public abstract class AbstractJDinkBrain implements JDinkBrain {
 		return result;
 	}
 
+	protected boolean processTargetMovement(
+			JDinkContext context, JDinkSprite sprite,
+			JDinkSprite targetSprite, JDinkRectangle movementBounds) {
+		boolean result = false;
+		if (in_this_base(sprite.getAnimationSequenceNumber(),
+				sprite.getBaseAttack())) {
+			// still attacking
+		} else {
+			int spriteDistance = sprite.getDistance();
+			if (spriteDistance == 0) {
+				spriteDistance = 5;
+				sprite.setDistance(spriteDistance);
+			}
+			long time = getTime(context);
+			DistanceAndDirection distanceResult = this.getDistanceAndDirection(
+					sprite, targetSprite);
+			if ((distanceResult.getDistance() < spriteDistance) &&
+					(sprite.getAttackWaitTime() < getTime(context))) {
+				if (sprite.getBaseAttack() > 0) {
+					DistanceAndDirection distanceResult2 = this.getDistanceAndDirection(
+							sprite, targetSprite, false);
+
+					sprite.setDirectionIndex(distanceResult2.getDirectionIndex());
+					sprite.setAnimationSequenceNumber(sprite.getBaseAttack() + sprite.getDirectionIndex());
+					sprite.setAnimationFrameNumber(0);
+
+					JDinkScriptInstance scriptInstance = sprite.getScriptInstance();
+					if (scriptInstance != null) {
+						JDinkScriptFunction function = scriptInstance.getFunctionByName("attack");
+						if (function != null) {
+							try {
+								scriptInstance.callFunction(context, function);
+							} catch (Throwable e) {
+								log.warn("[processTargetMovement] failed to execute attach script due to " + e, e);
+							}
+						} else {
+							sprite.setMoveWaitTime(time + (randomInt(context, 300) + 10));
+						}
+					}
+				    context.getController().notifyChanged(sprite, JDinkController.ALL_CHANGE);
+				    result = true;
+				}
+			}
+
+			if (!result) {
+				// not attacked
+				if (sprite.getMoveWaitTime() < time) {
+					this.processTarget(context, sprite, targetSprite, movementBounds);
+					result = true;
+				}
+				autoRepeatAnimation(context, sprite);
+			}
+		}
+		return result;
+	}
+
 	protected void processRandomMovement(
 			JDinkContext context, JDinkSprite sprite) {
 		processRandomMovement(context, sprite, getDefaultMovementBounds(context, sprite));
@@ -736,12 +778,7 @@ public abstract class AbstractJDinkBrain implements JDinkBrain {
             	changeDirection = true;
             }
 			if (changeDirection) {
-				int randomDirectionIndex = randomInt(context, 9) + 1;
-	            if ((randomDirectionIndex == JDinkDirectionIndexConstants.UP_LEFT) ||
-	            		(randomDirectionIndex == JDinkDirectionIndexConstants.UP_RIGHT) ||
-	            		(randomDirectionIndex == JDinkDirectionIndexConstants.DOWN_LEFT) ||
-	            		(randomDirectionIndex == JDinkDirectionIndexConstants.DOWN_RIGHT)) {
-	            	changeDirection(context, sprite, randomDirectionIndex);
+				if (changeRandomDirection(context, sprite)) {
 	                sprite.setMoveWaitTime(time + (randomInt(context, 2000) + 200));
 	            }
 			} else {
@@ -1065,56 +1102,29 @@ public abstract class AbstractJDinkBrain implements JDinkBrain {
  */
 	}
 
+	protected void processKilled(JDinkContext context, JDinkSprite sprite) {
+		callDieScript(context, sprite);
+	}
+
 	protected boolean processDamage(JDinkContext context, JDinkSprite sprite) {
 		boolean result = false;
 		int damage = sprite.getDamage();
 		if (damage > 0) {
 			int hitPoints = sprite.getHitPoints();
 			if (hitPoints > 0) {
+				if (log.isInfoEnabled()) {
+					log.info("[processDamage] killed sprite, spriteNumber=" + sprite.getSpriteNumber());
+				}
 				showDamage(context, sprite);
 				hitPoints = Math.max(0, sprite.getHitPoints() - damage);
 				sprite.setHitPoints(hitPoints);
 				if (hitPoints == 0) {
-					callDieScript(context, sprite);
+					this.processKilled(context, sprite);
 				}
 			}
 			sprite.setDamage(0);
 		}
 		return result;
-		/*
-		 *
-	if  (spr[h].damage > 0)
-    {
-        //got hit
-        //SoundPlayEffect( 1,3000, 800 );
-        if (spr[h].hitpoints > 0)
-        {
-            draw_damage(h);
-            if (spr[h].damage > spr[h].hitpoints) spr[h].damage = spr[h].hitpoints;
-            spr[h].hitpoints -= spr[h].damage;
-
-            if (spr[h].hitpoints < 1)
-            {
-                //they killed it
-                check_for_kill_script(h);
-
-                if (spr[h].brain == 16)
-                {
-                    if (spr[h].dir == 0) spr[h].dir = 3;
-                    spr[h].brain = 0;
-                    change_dir_to_diag(&spr[h].dir);
-                    add_kill_sprite(h);
-                    spr[h].active = false;
-                }
-                return;
-
-            }
-        }
-        spr[h].damage = 0;
-
-    }
-
-		 */
 	}
 
 }

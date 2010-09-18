@@ -16,6 +16,7 @@ import org.apache.commons.logging.LogFactory;
 
 import de.siteof.jdink.brain.JDinkButtonBrain;
 import de.siteof.jdink.brain.JDinkDefaultBrain;
+import de.siteof.jdink.brain.JDinkDragonBrain;
 import de.siteof.jdink.brain.JDinkDuckBrain;
 import de.siteof.jdink.brain.JDinkMouseBrain;
 import de.siteof.jdink.brain.JDinkOneTimeBackgroundBrain;
@@ -404,7 +405,7 @@ public class JDinkApp {
 		context.addBrain(7, new JDinkOneTimeBrain());
 		context.addBrain(8, new JDinkTextBrain());
 		context.addBrain(9, new JDinkPillBrain());
-		context.addBrain(10, new JDinkUnimplementedBrain(10, "dragon"));
+		context.addBrain(10, new JDinkDragonBrain());
 		context.addBrain(11, new JDinkUnimplementedBrain(11, "missle"));
 		context.addBrain(12, new JDinkScaleBrain());
 		context.addBrain(13, new JDinkMouseBrain());
