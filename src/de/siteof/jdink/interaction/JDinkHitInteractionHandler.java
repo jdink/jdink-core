@@ -56,6 +56,10 @@ public class JDinkHitInteractionHandler extends AbstractJDinkInteractionHandler 
 				JDinkSpriteCollision spriteCollision = (JDinkSpriteCollision) collision;
 				JDinkSprite otherSprite = spriteCollision.getSprite();
 				otherSprite.setLastHitSpriteNumber(sprite.getSpriteNumber());
+				context.getGlobalVariables().enemySprite.setInt(context,
+						sprite.getSpriteNumber());
+				context.getGlobalVariables().missleSource.setInt(context,
+						sprite.getSpriteNumber());
 				JDinkScriptInstance scriptInstance = otherSprite.getScriptInstance();
 				if (scriptInstance != null) {
 					JDinkScriptFunction function = scriptInstance.getFunctionByName("hit");
@@ -64,7 +68,7 @@ public class JDinkHitInteractionHandler extends AbstractJDinkInteractionHandler 
 							if (log.isInfoEnabled()) {
 								log.info("hit to sprite " + otherSprite.getSpriteNumber());
 							}
-							scriptInstance.callFunction(context, function, new Object[0]);
+							scriptInstance.callFunction(context, function);
 						} catch (Throwable e) {
 							log.error("failed to execute hit method due to " + e, e);
 						}

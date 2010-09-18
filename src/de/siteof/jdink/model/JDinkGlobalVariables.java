@@ -10,12 +10,14 @@ public class JDinkGlobalVariables {
 	public final JDinkAttachedGlobalIntVariable currentWeapon = new JDinkAttachedGlobalIntVariable("&cur_weapon");
 	public final JDinkAttachedGlobalIntVariable currentMagic = new JDinkAttachedGlobalIntVariable("&cur_magic");
 	public final JDinkAttachedGlobalIntVariable defense = new JDinkAttachedGlobalIntVariable("&defense");
+	public final JDinkAttachedGlobalIntVariable enemySprite = new JDinkAttachedGlobalIntVariable("&enemy_sprite");
 	public final JDinkAttachedGlobalIntVariable experience = new JDinkAttachedGlobalIntVariable("&exp");
 	public final JDinkAttachedGlobalIntVariable gold = new JDinkAttachedGlobalIntVariable("&gold");
 	public final JDinkAttachedGlobalIntVariable level = new JDinkAttachedGlobalIntVariable("&level");
 	public final JDinkAttachedGlobalIntVariable life = new JDinkAttachedGlobalIntVariable("&life");
 	public final JDinkAttachedGlobalIntVariable lifeMax = new JDinkAttachedGlobalIntVariable("&lifemax");
 	public final JDinkAttachedGlobalIntVariable magic = new JDinkAttachedGlobalIntVariable("&magic");
+	public final JDinkAttachedGlobalIntVariable missleSource = new JDinkAttachedGlobalIntVariable("&missle_source");
 	public final JDinkAttachedGlobalIntVariable playerMap = new JDinkAttachedGlobalIntVariable("&player_map");
 	public final JDinkAttachedGlobalIntVariable strength = new JDinkAttachedGlobalIntVariable("&strength");
 	public final JDinkAttachedGlobalIntVariable vision = new JDinkAttachedGlobalIntVariable("&vision");
@@ -25,11 +27,13 @@ public class JDinkGlobalVariables {
 			currentMagic,
 			defense,
 			experience,
+			enemySprite,
 			gold,
 			level,
 			life,
 			lifeMax,
 			magic,
+			missleSource,
 			playerMap,
 			strength,
 			vision
