@@ -146,7 +146,7 @@ public class JDinkSaveGameManager {
 			}
 		}
 
-		Map<Integer, JDinkItem> magicItems = saveGame.getItems();
+		Map<Integer, JDinkItem> magicItems = saveGame.getMagicItems();
 		if (magicItems != null) {
 			for (JDinkItem item: magicItems.values()) {
 				JDinkItem fullItem = getFullItem(context, item);
