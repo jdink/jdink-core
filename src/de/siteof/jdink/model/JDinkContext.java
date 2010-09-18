@@ -103,6 +103,14 @@ public class JDinkContext {
 		spriteHelper = new JDinkSpriteHelper(this);
 	}
 
+	public void clearGame() {
+		this.clearMapState();
+		this.sequenceMap.clear();
+		this.frameAttributesMap.clear();
+		this.globalScope.clear();
+		this.globalVariables.detach();
+	}
+
 	public long getTime() {
 		// TODO may need to use a constant time throughout the frame
 		return System.currentTimeMillis();

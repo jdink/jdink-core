@@ -42,6 +42,7 @@ public class JDinkPlayerBrain extends AbstractJDinkBrain {
 			if ((updatedLife <= 0) && (updatedLife != life)) {
 				try {
 					JDinkScriptUtil.callStatelessScript(context, "dinfo", "die");
+					processed = true;
 				} catch (Throwable e) {
 					log.warn("[update] failed to execute dinfo.die due to " + e, e);
 				}

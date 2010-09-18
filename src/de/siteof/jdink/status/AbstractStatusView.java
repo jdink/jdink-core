@@ -2,6 +2,7 @@ package de.siteof.jdink.status;
 
 import java.io.Serializable;
 
+import de.siteof.jdink.control.JDinkController;
 import de.siteof.jdink.geom.JDinkShape;
 import de.siteof.jdink.model.JDinkContext;
 import de.siteof.jdink.model.JDinkSprite;
@@ -12,14 +13,14 @@ import de.siteof.jdink.view.JDinkImage;
 public abstract class AbstractStatusView implements StatusView, Serializable {
 
 	private static final long serialVersionUID = 1L;
-	
+
 	private int x;
 	private final int y;
 	private int sequenceNumber;
 	private JDinkSprite[] sprites;
 	private int[] frameNumbers;
 	private boolean visible;
-	
+
 	public AbstractStatusView(
 			int x,
 			int y,
@@ -31,7 +32,7 @@ public abstract class AbstractStatusView implements StatusView, Serializable {
 		this.sprites = new JDinkSprite[digitCount];
 		this.frameNumbers = new int[digitCount];
 	}
-	
+
 	public void setCharacterLength(JDinkContext context, int length) {
 		if (length != sprites.length) {
 			for (int i = 0; i < this.sprites.length - length; i++) {
@@ -47,7 +48,7 @@ public abstract class AbstractStatusView implements StatusView, Serializable {
 			}
 		}
 	}
-	
+
 	public int getCharacterLength() {
 		return this.sprites.length;
 	}
@@ -64,7 +65,7 @@ public abstract class AbstractStatusView implements StatusView, Serializable {
 			value = value / 10;
 		}
 	}
-	
+
 	protected void updateFrameNumbers(String value) {
 		int offset = value.length() - frameNumbers.length;
 		for (int i = 0; i < frameNumbers.length; i++) {
@@ -116,11 +117,11 @@ public abstract class AbstractStatusView implements StatusView, Serializable {
 			frameNumbers[i] = frameNumber;
 		}
 	}
-	
+
 	protected abstract boolean updateCurrentValue(JDinkContext context);
 
 	protected abstract void updateFrameNumbers(JDinkContext context);
-	
+
 	private boolean updateCurrentValueAndFrameNumbers(JDinkContext context) {
 		boolean result = this.updateCurrentValue(context);
 		if (result) {
@@ -148,6 +149,19 @@ public abstract class AbstractStatusView implements StatusView, Serializable {
 		if (!visible) {
 			update(context);
 			doShow(context);
+		}
+	}
+
+	@Override
+	public final void hide(JDinkContext context) {
+		if (visible) {
+			for (JDinkSprite sprite: this.sprites) {
+				if (sprite != null) {
+					sprite.setVisible(false);
+					context.getController().notifyChanged(sprite, JDinkController.ALL_CHANGE);
+				}
+			}
+			this.visible = false;
 		}
 	}
 

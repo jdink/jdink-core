@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import de.siteof.jdink.control.JDinkController;
-import de.siteof.jdink.geom.JDinkPoint;
 import de.siteof.jdink.geom.JDinkRectangle;
 import de.siteof.jdink.model.IReadOnlyContextModel;
 import de.siteof.jdink.model.JDinkContext;
@@ -17,27 +16,27 @@ import de.siteof.jdink.view.JDinkImage;
 public class BarStatusView implements StatusView {
 
 	private static final long serialVersionUID = 1L;
-	
+
 	private final IReadOnlyContextModel<Integer> valueModel;
 	private final IReadOnlyContextModel<Integer> maxValueModel;
-	
+
 	private final int valueSequenceNumber;
 	private final int remainderSequenceNumber;
-	
+
 	private final int x;
 	private final int y;
 	private final int resolution;
 	private final int maxWidthPerRow;
 	private final int maxWidthTotal;
 	private final int rowSpacing;
-	
+
 	private final List<JDinkSprite> sprites = new ArrayList<JDinkSprite>();
-	
+
 	private boolean visible;
-	
+
 	private int currentValue = -1;
 	private int currentMaxValue = -1;
-	
+
 	public BarStatusView(
 			IReadOnlyContextModel<Integer> valueModel,
 			IReadOnlyContextModel<Integer> maxValueModel,
@@ -60,7 +59,7 @@ public class BarStatusView implements StatusView {
 		this.maxWidthTotal = maxWidthTotal;
 		this.rowSpacing = rowSpacing;
 	}
-	
+
 	private final int getInt(JDinkContext context, IReadOnlyContextModel<Integer> model) {
 		Integer value = model.getObject(context);
 		return (value != null ? value.intValue() : 0);
@@ -68,10 +67,25 @@ public class BarStatusView implements StatusView {
 
 	@Override
 	public void show(JDinkContext context) {
-		this.updateValue(context);
-		this.doShow(context);
+		if (!visible) {
+			this.updateValue(context);
+			this.doShow(context);
+		}
 	}
-	
+
+	@Override
+	public void hide(JDinkContext context) {
+		if (visible) {
+			for (JDinkSprite sprite: this.sprites) {
+				if (sprite != null) {
+					sprite.setVisible(false);
+					context.getController().notifyChanged(sprite, JDinkController.ALL_CHANGE);
+				}
+			}
+			this.visible = false;
+		}
+	}
+
 //	private final JDinkRectangle getBounds(JDinkContext context, JDinkSprite sprite) {
 //		JDinkRectangle result = null;
 //		JDinkShape bounds = sprite.getBounds();
@@ -88,7 +102,7 @@ public class BarStatusView implements StatusView {
 //		}
 //		return result;
 //	}
-	
+
 	private final JDinkRectangle getBounds(JDinkContext context, int sequenceNumber, int frameNumber) {
 		JDinkRectangle result = null;
 		JDinkSequence sequence = context.getSequence(sequenceNumber, false);
@@ -109,7 +123,7 @@ public class BarStatusView implements StatusView {
 		}
 		return result;
 	}
-	
+
 	public void doShow(JDinkContext context) {
 		// TODO this is displayed in a different way to the original game
 		JDinkController controller = context.getController();
@@ -119,7 +133,7 @@ public class BarStatusView implements StatusView {
 		int currentY = y;
 		JDinkSprite sprite;
 //		JDinkRectangle bounds;
-		
+
 //		int resolution = this.resolution;
 		int value = Math.max(0, this.currentValue);
 		value = Math.min(this.maxWidthTotal, value);
@@ -160,7 +174,7 @@ public class BarStatusView implements StatusView {
 		}
 		int remainderMiddleWidth = maxValue - remainderLeftWidth - remainderRightWidth;
 
-		
+
 		if (spriteIndex >= sprites.size()) {
 			sprite = spriteHelper.newSpriteAbsolute(currentX, currentY, valueSequenceNumber, 1, false);
 			sprites.add(sprite);
@@ -295,7 +309,7 @@ public class BarStatusView implements StatusView {
 	}
 
 	public boolean updateValue(JDinkContext context) {
-		int currentValue = getInt(context, valueModel); 
+		int currentValue = getInt(context, valueModel);
 		int currentMaxValue = getInt(context, maxValueModel);
 		boolean result;
 		if ((currentValue != this.currentValue) || (currentMaxValue != this.currentMaxValue)) {
@@ -318,6 +332,6 @@ public class BarStatusView implements StatusView {
 		}
 		return result;
 	}
-	
-	
+
+
 }

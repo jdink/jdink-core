@@ -29,7 +29,6 @@ import de.siteof.jdink.brain.JDinkTextBrain;
 import de.siteof.jdink.brain.JDinkUnimplementedBrain;
 import de.siteof.jdink.collision.JDinkConfiguration;
 import de.siteof.jdink.control.JDinkController;
-import de.siteof.jdink.control.JDinkKeyEventsHandler;
 import de.siteof.jdink.format.map.JDinkMapLoader;
 import de.siteof.jdink.functions.ini.JDinkLoadSequenceFunction;
 import de.siteof.jdink.functions.ini.JDinkLoadSequenceNowFunction;
@@ -63,6 +62,7 @@ import de.siteof.jdink.functions.script.JDinkPreloadSeqFunction;
 import de.siteof.jdink.functions.script.JDinkPushActiveFunction;
 import de.siteof.jdink.functions.script.JDinkRandomFunction;
 import de.siteof.jdink.functions.script.JDinkResetTimerFunction;
+import de.siteof.jdink.functions.script.JDinkRestartGameFunction;
 import de.siteof.jdink.functions.script.JDinkSaveGameFunction;
 import de.siteof.jdink.functions.script.JDinkScreenLockFunction;
 import de.siteof.jdink.functions.script.JDinkSetDinkBasePushFunction;
@@ -126,15 +126,8 @@ import de.siteof.jdink.interaction.JDinkInteractionType;
 import de.siteof.jdink.interaction.JDinkTalkInteractionHandler;
 import de.siteof.jdink.interaction.JDinkTouchInteractionHandler;
 import de.siteof.jdink.loader.JDinkFileManager;
-import de.siteof.jdink.loader.JDinkIniLoader;
 import de.siteof.jdink.model.JDinkContext;
-import de.siteof.jdink.model.JDinkPlayer;
-import de.siteof.jdink.model.JDinkSequence;
-import de.siteof.jdink.model.JDinkSprite;
-import de.siteof.jdink.script.JDinkScriptFile;
-import de.siteof.jdink.script.JDinkScriptInstance;
 import de.siteof.jdink.util.FileUtil;
-import de.siteof.jdink.view.ColorConstants;
 import de.siteof.jdink.view.JDinkView;
 import de.siteof.jdink.view.JDinkViewFactory;
 import de.siteof.task.ITask;
@@ -153,6 +146,7 @@ public class JDinkApp {
 
 	private static final String PROPERTY_NAME_DINK_HOME	= "dink.home";
 	private static final String PROPERTY_NAME_DMOD_HOME	= "dmod.home";
+	private static final String PROPERTY_NAME_DMOD_NAME	= "dmod.name";
 
 	private JDinkContext context;
 	private final AtomicBoolean started = new AtomicBoolean();
@@ -332,37 +326,6 @@ public class JDinkApp {
 		return fontColors;
 	}
 
-	private void initPlayer(JDinkContext context, JDinkSprite sprite) {
-		JDinkPlayer player = new JDinkPlayer(sprite.getSpriteNumber());
-		player.setBasePush(310);
-		context.setCurrentPlayer(player);
-
-		// update_frame(733)
-		sprite.setBrainNumber(1);
-		sprite.setSequenceNumber(2);
-		sprite.setFrameNumber(1);
-		sprite.setAnimationSequenceNumber(2);
-		sprite.setDirectionIndex(2);
-		sprite.setStrength(10);
-		sprite.setDefense(0);
-		sprite.setBaseIdle(10);
-		sprite.setBaseWalk(-1);
-		sprite.setBaseHit(100);
-		sprite.setSize(100);
-		sprite.setTiming(33);
-
-		sprite.setSequence(context.getSequence(sprite.getSequenceNumber(), false));
-		sprite.setBrain(context.getBrain(sprite.getBrainNumber()));
-//        spr[1].timer = 0;
-//        spr[1].hard = 1;
-//        spr[1].damage = 0;
-//        spr[1].skip = 0;
-//        SetRect(&spr[1].alt,0,0,0,0);
-//        spr[1].active = TRUE;
-
-	}
-
-
 	private void doStart() throws Throwable {
 
 		String dinkConfigurationFile = System.getProperty(
@@ -395,27 +358,42 @@ public class JDinkApp {
 
 		this.context.setConfiguration(new JDinkConfiguration(m));
 
+		String defaultDmodName = "dink";
+
 		String dinkHome	= (String) properties.get(PROPERTY_NAME_DINK_HOME);
-		String dmodName	= (String) properties.get(PROPERTY_NAME_DMOD_HOME);
-		if (dinkHome == null) {
-			dinkHome	= "M:\\_programs_\\_games_\\_rpg_\\Dink Smallwood";
+		String dmodHome	= (String) properties.get(PROPERTY_NAME_DMOD_HOME);
+		String dmodName	= (String) properties.get(PROPERTY_NAME_DMOD_NAME);
+		File dinkRoot = null;
+		File dmodHomeFile = null;
+		if ((dinkHome != null) && (!dinkHome.isEmpty())) {
+			dinkRoot = new File(dinkHome);
+		} else {
+			if ((dmodHome == null) || (dmodHome.isEmpty())) {
+				throw new Exception("property missing: " + PROPERTY_NAME_DMOD_HOME);
+			}
 		}
-
-		File dinkRoot = new File(dinkHome);
-
-		if (dmodName == null) {
-			dmodName	= "akt2";
+		if ((dmodHome != null) && (!dmodHome.isEmpty())) {
+			if (dinkRoot != null) {
+				dmodHomeFile = new File(dinkRoot, dmodHome);
+			} else {
+				dmodHomeFile = new File(dmodHome);
+				dinkRoot = dmodHomeFile.getParentFile();
+			}
+			dmodName = dmodHomeFile.getName();
+		} else {
+			if (dmodName == null) {
+				dmodName	= defaultDmodName;
+			}
 		}
-//		String dmod = "akt2";
-		File fileDmod = getFile(dinkRoot, dmodName);
-		File fileDefault = new File(dinkRoot, "dink");
-		JDinkIniLoader iniLoader = new JDinkIniLoader();
+		File fileDefault = new File(dinkRoot, defaultDmodName);
 		JDinkFileManager fileManager = new JDinkFileManager();
-		fileManager.setPathParents(new File[] {fileDmod, fileDefault});
+		fileManager.setPathParents(new File[] {dmodHomeFile, fileDefault});
+		JDinkGameManager gameManager = JDinkGameManager.getInstance(context);
+		gameManager.setGameHome(dmodHomeFile);
 		context.setFileManager(fileManager);
 		context.setImageLoader(view.getImageLoader());
 
-		context.setGameId(fileDmod.getName());
+		context.setGameId(dmodHomeFile.getName());
 		context.getView().onBeforeLoad(context);
 
 		this.context.getView().setSplashImage(context.getImage("tiles/Splash.bmp"));
@@ -475,6 +453,7 @@ public class JDinkApp {
 		context.addFunction("playsound", new JDinkPlaySoundFunction());
 		context.addFunction("preload_seq", new JDinkPreloadSeqFunction());
 		context.addFunction("random", new JDinkRandomFunction());
+		context.addFunction("restart_game", new JDinkRestartGameFunction());
 		context.addFunction("save_game", new JDinkSaveGameFunction());
 		context.addFunction("say", new JDinkSayFunction());
 		context.addFunction("say_stop", new JDinkSayStopFunction());
@@ -553,30 +532,32 @@ public class JDinkApp {
 //		context.addFunction("sp_hard", new JDinkUnimplementedFunction("sp_hard"));
 		context.addFunction("draw_hard_sprite", new JDinkUnimplementedFunction("draw_hard_sprite"));
 
-		iniLoader.setContext(context);
-		iniLoader.load(getFile(fileDmod, "dink.ini"));
-
-		initPlayer(context, context.getController().getSprite(1, true));
-
-		// unfortunately it is hard coded that 442 is transparent
-		JDinkSequence sequence = context.getSequence(442, false);
-		if (sequence != null) {
-			sequence.setBackgroundColor(ColorConstants.WHITE);
-		}
-
-		JDinkScriptInstance scriptInstance = new JDinkScriptInstance();
-		JDinkScriptFile scriptFile = context.getScript("main", true);
-		scriptInstance.setScriptFile(scriptFile);
-		scriptInstance.initialize(context); // run main
-
-		context.getController().addFrameEventListener(new JDinkKeyEventsHandler());
-
-		scriptFile = context.getScript("start", true);
-		scriptInstance = new JDinkScriptInstance();
-		scriptInstance.setScriptFile(scriptFile);
-		scriptInstance.initialize(context); // run main
-
-		log.debug("done");
+		gameManager.start(context);
+//		JDinkIniLoader iniLoader = new JDinkIniLoader();
+//		iniLoader.setContext(context);
+//		iniLoader.load(getFile(fileDmod, "dink.ini"));
+//
+//		initPlayer(context, context.getController().getSprite(1, true));
+//
+//		// unfortunately it is hard coded that 442 is transparent
+//		JDinkSequence sequence = context.getSequence(442, false);
+//		if (sequence != null) {
+//			sequence.setBackgroundColor(ColorConstants.WHITE);
+//		}
+//
+//		JDinkScriptInstance scriptInstance = new JDinkScriptInstance();
+//		JDinkScriptFile scriptFile = context.getScript("main", true);
+//		scriptInstance.setScriptFile(scriptFile);
+//		scriptInstance.initialize(context); // run main
+//
+//		context.getController().addFrameEventListener(new JDinkKeyEventsHandler());
+//
+//		scriptFile = context.getScript("start", true);
+//		scriptInstance = new JDinkScriptInstance();
+//		scriptInstance.setScriptFile(scriptFile);
+//		scriptInstance.initialize(context); // run main
+//
+//		log.debug("done");
 	}
 
 }

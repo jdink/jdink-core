@@ -66,7 +66,9 @@ public class JDinkStatusManager implements Serializable {
 	private final IReadOnlyContextModel<String> experienceTextModel;
 
 	private boolean statusDrawn;
+	private boolean visible;
 
+	private List<JDinkSprite> sprites;
 	private StatusView[] statusViews;
 
 	private JDinkStatusManager() {
@@ -149,6 +151,21 @@ public class JDinkStatusManager implements Serializable {
 		return result;
 	}
 
+	public void hideStatus(JDinkContext context) {
+		if (statusDrawn) {
+			for (JDinkSprite sprite: this.sprites) {
+				if (sprite != null) {
+					sprite.setVisible(false);
+					context.getController().notifyChanged(sprite, JDinkController.ALL_CHANGE);
+				}
+			}
+			for (int i = 0; i < statusViews.length; i++) {
+				statusViews[i].hide(context);
+			}
+			this.visible = false;
+		}
+	}
+
 	public void drawStatus(JDinkContext context) {
 		if (!statusDrawn) {
 			JDinkController controller = context.getController();
@@ -195,6 +212,7 @@ public class JDinkStatusManager implements Serializable {
 				for (JDinkSprite sprite: sprites) {
 					sprite.setVisible(true);
 				}
+				this.sprites = sprites;
 
 				for (int i = 0; i < statusViews.length; i++) {
 					statusViews[i].show(context);
@@ -203,6 +221,19 @@ public class JDinkStatusManager implements Serializable {
 				controller.setCurrentSpriteLayer(previousSpriteLayer);
 			}
 			controller.setChanged(true);
+			this.statusDrawn = true;
+			this.visible = true;
+		} else if (!visible) {
+			for (JDinkSprite sprite: this.sprites) {
+				if (sprite != null) {
+					sprite.setVisible(true);
+					context.getController().notifyChanged(sprite, JDinkController.ALL_CHANGE);
+				}
+			}
+			for (int i = 0; i < statusViews.length; i++) {
+				statusViews[i].show(context);
+			}
+			this.visible = true;
 		}
 	}
 
