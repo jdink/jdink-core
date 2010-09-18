@@ -508,6 +508,15 @@ public abstract class AbstractJDinkBrain implements JDinkBrain {
 		}
 	}
 
+	protected void autoRepeatWalkAnimation(JDinkContext context, JDinkSprite sprite) {
+		if ((sprite.getAnimationSequenceNumber() == 0) &&
+				(in_this_base(sprite.getOriginalAnimationSequenceNumber(), sprite.getBaseWalk()))) {
+			sprite.setAnimationSequenceNumber(sprite.getOriginalAnimationSequenceNumber());
+			sprite.setAnimationFrameNumber(0);
+			context.getController().notifyChanged(sprite, JDinkController.CONTROL_CHANGE);
+		}
+	}
+
 	protected DistanceAndDirection getDistanceAndDirection(
 			JDinkSprite sprite, JDinkSprite targetSprite) {
 		return getDistanceAndDirection(sprite, targetSprite, false);
@@ -643,6 +652,7 @@ public abstract class AbstractJDinkBrain implements JDinkBrain {
 						this.processTarget(context, sprite, targetSprite, movementBounds);
 						result = true;
 					}
+					autoRepeatWalkAnimation(context, sprite);
 				}
 			}
 		}
@@ -743,6 +753,7 @@ public abstract class AbstractJDinkBrain implements JDinkBrain {
 	        sprite.setMoveWaitTime(time + 400);
 	        changeDirection(context, sprite, autoreverse_diag(context, sprite));
 	    }
+		autoRepeatWalkAnimation(context, sprite);
 	    context.getController().notifyChanged(sprite, JDinkController.ALL_CHANGE);
 	}
 
