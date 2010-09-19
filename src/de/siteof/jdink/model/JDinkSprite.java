@@ -1,5 +1,6 @@
 package de.siteof.jdink.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -20,7 +21,9 @@ import de.siteof.jdink.script.JDinkVariable;
 /**
  * <p>A sprite is a movable object.</p>
  */
-public class JDinkSprite {
+public class JDinkSprite implements Serializable, Cloneable {
+
+	private static final long serialVersionUID = 1L;
 
 	/**
 	 * The spriteNumber is a unique id of the sprite.
@@ -154,6 +157,11 @@ public class JDinkSprite {
 	public JDinkSprite(int layer, int spriteNumber) {
 		this.layerNumber = layer;
 		this.spriteNumber = spriteNumber;
+	}
+
+	@Override
+	public JDinkSprite clone() throws CloneNotSupportedException {
+		return (JDinkSprite) super.clone();
 	}
 
 	public JDinkScope requestScope(JDinkContext context) {
@@ -300,10 +308,10 @@ public class JDinkSprite {
 			result = true;
 			break;
 		case TOUCH:
-			result = (this.getTouchDamage() != 0);
+			result = ((!this.isNoTouch()) && (this.getTouchDamage() != 0));
 			break;
 		case HIT:
-			result = ((!this.isNoHit()) || (this.getScriptInstance() != null));
+			result = (!this.isNoHit());
 			break;
 		case INTERACT:
 			result = true;
@@ -321,10 +329,10 @@ public class JDinkSprite {
 			result = true;
 			break;
 		case WALK:
-			result = (this.getCollisionType() == 0);
+			result = ((!this.isNoHardness()) && (this.getCollisionType() == 0));
 			break;
 		case TOUCH:
-			result = true;
+			result = (!this.isNoTouch());
 			break;
 		default:
 			result = false;

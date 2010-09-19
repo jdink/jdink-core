@@ -8,7 +8,7 @@ public abstract class AbstractJDinkInteractionHandler implements JDinkInteractio
 
 	protected int hurtSprite(JDinkContext context, JDinkSprite sprite, int damage) {
 		int actualDamage;
-		if (damage > 0) {
+		if ((damage > 0) && (sprite.getHitPoints() > 0)) {
 			actualDamage = Math.max(0, damage - sprite.getDefense());
 			if (actualDamage == 0) {
 				// if the damage would be zero, then randomly damage the sprite by 1
