@@ -1,9 +1,3 @@
-/*
- * Created on 28.01.2005
- *
- * TODO To change the template for this generated file go to
- * Window - Preferences - Java - Code Style - Code Templates
- */
 package de.siteof.jdink.script;
 
 
@@ -17,10 +11,9 @@ import de.siteof.jdink.format.dinkc.JDinkCLoader;
 import de.siteof.jdink.functions.JDinkExecutionContext;
 
 /**
- * @author user
- *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * <p>Represents a script block.</p>
+ * <p>A script block is a list of calls.
+ * It may or may not directly relate to an explicitly defined script block in the source code.</p>
  */
 public class JDinkScriptBlock extends AbstractJDinkScriptCall {
 

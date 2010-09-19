@@ -356,16 +356,16 @@ public class JDinkApp {
 		String dmodName	= (String) properties.get(PROPERTY_NAME_DMOD_NAME);
 		File dinkRoot = null;
 		File dmodHomeFile = null;
-		if ((dinkHome != null) && (!dinkHome.isEmpty())) {
+		if ((dinkHome != null) && (dinkHome.length() > 0)) {
 			dinkRoot = new File(dinkHome);
 		} else {
-			if ((dmodHome == null) || (dmodHome.isEmpty())) {
+			if ((dmodHome == null) || (dmodHome.length() == 0)) {
 				throw new Exception("property missing: " + PROPERTY_NAME_DMOD_HOME);
 			}
 		}
-		if ((dmodHome != null) && (!dmodHome.isEmpty())) {
+		if ((dmodHome != null) && (dmodHome.length() > 0)) {
 			if (dinkRoot != null) {
-				dmodHomeFile = new File(dinkRoot, dmodHome);
+				dmodHomeFile = new File(dmodHome);
 			} else {
 				dmodHomeFile = new File(dmodHome);
 				dinkRoot = dmodHomeFile.getParentFile();
@@ -373,8 +373,9 @@ public class JDinkApp {
 			dmodName = dmodHomeFile.getName();
 		} else {
 			if (dmodName == null) {
-				dmodName	= defaultDmodName;
+				dmodName = defaultDmodName;
 			}
+			dmodHomeFile = new File(dinkRoot, dmodName);
 		}
 		File fileDefault = new File(dinkRoot, defaultDmodName);
 		JDinkFileManager fileManager = new JDinkFileManager();
@@ -384,7 +385,7 @@ public class JDinkApp {
 		context.setFileManager(fileManager);
 		context.setImageLoader(view.getImageLoader());
 
-		context.setGameId(dmodHomeFile.getName());
+		context.setGameId(dmodName);
 		context.getView().onBeforeLoad(context);
 
 		this.context.getView().setSplashImage(context.getImage("tiles/Splash.bmp"));

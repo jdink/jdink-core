@@ -234,8 +234,8 @@ public class JDinkSequenceLazyLoader implements JDinkLazyLoader {
 			// }
 			// }
 			if (fileNames.length == 0) {
-				if (log.isDebugEnabled()) {
-					log.debug("no files found for:" + fileNamePrefix);
+				if (log.isWarnEnabled()) {
+					log.warn("no files found for:" + fileNamePrefix);
 				}
 			}
 			return true;

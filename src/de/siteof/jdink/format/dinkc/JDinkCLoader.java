@@ -146,6 +146,7 @@ public class JDinkCLoader extends AbstractLoader {
 	private static final String LABEL_DEFINE_TOKEN = ":";
 	private static final String ROUND_BRAKET_BEGIN_TOKEN = "(";
 	private static final String ROUND_BRAKET_END_TOKEN = ")";
+	private static final String ARGUMENT_SEPARATOR_TOKEN = ",";
 
 	private static final String NEGATIVE_NUMBER_PREFIX = "-";
 
@@ -454,7 +455,7 @@ public class JDinkCLoader extends AbstractLoader {
 		this.currentLine = line;
 		int nextColumn = 1;
 		StringTokenizer st = new StringTokenizer(line, separatingChars, true);
-		while((pushedBackToken != null) || (st.hasMoreTokens())) {
+		while ((pushedBackToken != null) || (st.hasMoreTokens())) {
 			String token;
 			int column = nextColumn;
 			this.currentColumn = column;
@@ -674,7 +675,7 @@ public class JDinkCLoader extends AbstractLoader {
 							}
 						}
 					} else if (isSeparatingChar) {
-						if (token.equals(",")) {
+						if (token.equals(ARGUMENT_SEPARATOR_TOKEN)) {
 							if (currentParseContext.getCall() != null) {
 								currentParseContext.getCall().addArgument(getTokenAsArgument(previousToken));
 							} else {
@@ -789,7 +790,7 @@ public class JDinkCLoader extends AbstractLoader {
 					}
 					break;
 				case STATE_CALL_FUNCTION_ARGUMENTS_SEPARATOR:
-					if (token.equals(",")) {
+					if (token.equals(ARGUMENT_SEPARATOR_TOKEN)) {
 						if (currentParseContext.getCall() instanceof JDinkScriptIfFunctionCall) {
 							throw new SyntaxException("if has one parameter only", line, lineNo, column, token);
 						}
@@ -855,7 +856,9 @@ public class JDinkCLoader extends AbstractLoader {
 					if (currentParseContext.getCall() != null) {
 						currentParseContext.getCall().addArgument(oldParseContext.getCall());
 						oldParseContext = currentParseContext;
-						//this.popParseContext();
+						if (currentParseContext.getState() != STATE_CALL_FUNCTION_ARGUMENTS_SEPARATOR) {
+							currentParseContext.setState(STATE_CALL_END);
+						}
 					} else {
 						this.pushParseContext(oldParseContext);
 						//currentParseContext.setCall(oldParseContext.getCall());

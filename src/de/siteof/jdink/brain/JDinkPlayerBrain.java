@@ -19,8 +19,10 @@ import de.siteof.jdink.model.JDinkDirectionIndexConstants;
 import de.siteof.jdink.model.JDinkItem;
 import de.siteof.jdink.model.JDinkMapTransition;
 import de.siteof.jdink.model.JDinkPlayer;
+import de.siteof.jdink.model.JDinkSequence;
 import de.siteof.jdink.model.JDinkSprite;
 import de.siteof.jdink.script.util.JDinkScriptUtil;
+import de.siteof.jdink.util.debug.JDinkObjectOutputUtil;
 
 /**
  * <p>Brain: 1</p>
@@ -41,6 +43,7 @@ public class JDinkPlayerBrain extends AbstractJDinkBrain {
 			context.getGlobalVariables().life.setInt(context, updatedLife);
 			if ((updatedLife <= 0) && (updatedLife != life)) {
 				try {
+					log.info("[update] player died, calling dinfo.die");
 					JDinkScriptUtil.callStatelessScript(context, "dinfo", "die");
 					processed = true;
 				} catch (Throwable e) {
