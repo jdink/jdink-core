@@ -102,6 +102,7 @@ import de.siteof.jdink.functions.script.sprite.JDinkSpHardFunction;
 import de.siteof.jdink.functions.script.sprite.JDinkSpHitPointsFunction;
 import de.siteof.jdink.functions.script.sprite.JDinkSpKillWaitFunction;
 import de.siteof.jdink.functions.script.sprite.JDinkSpNoControlFunction;
+import de.siteof.jdink.functions.script.sprite.JDinkSpNoDrawFunction;
 import de.siteof.jdink.functions.script.sprite.JDinkSpNoHitFunction;
 import de.siteof.jdink.functions.script.sprite.JDinkSpNoTouchFunction;
 import de.siteof.jdink.functions.script.sprite.JDinkSpNoclipFunction;
@@ -466,6 +467,7 @@ public class JDinkApp {
 		context.addFunction("sp_hitpoints", new JDinkSpHitPointsFunction());
 		context.addFunction("sp_kill_wait", new JDinkSpKillWaitFunction());
 		context.addFunction("sp_nocontrol", new JDinkSpNoControlFunction());
+		context.addFunction("sp_nodraw", new JDinkSpNoDrawFunction());
 		context.addFunction("sp_nohit", new JDinkSpNoHitFunction());
 		context.addFunction("sp_notouch", new JDinkSpNoTouchFunction());
 		context.addFunction("sp_pseq", new JDinkSpPSeqFunction());
