@@ -114,6 +114,12 @@ public class JDinkSprite implements Serializable, Cloneable {
 	private int lastHitSpriteNumber;
 	private boolean active = true;
 	private boolean visible = true;
+
+	/**
+	 * A sprite that is disabled is practically the same as not being active.
+	 */
+	private boolean disabled;
+
 	private JDinkSprite parentSprite = null;
 
 	private int baseBloodSequenceNumber;
@@ -925,5 +931,13 @@ public class JDinkSprite implements Serializable, Cloneable {
 
 	public void setFollowSpriteNumber(int followSpriteNumber) {
 		this.followSpriteNumber = followSpriteNumber;
+	}
+
+	public boolean isDisabled() {
+		return disabled;
+	}
+
+	public void setDisabled(boolean disabled) {
+		this.disabled = disabled;
 	}
 }

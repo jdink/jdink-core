@@ -75,7 +75,7 @@ public class JDinkController {
 		new IObjectFilter<JDinkSprite>() {
 			@Override
 			public boolean matches(JDinkSprite sprite) {
-				return sprite.isActive();
+				return (sprite.isActive());
 			}
 	};
 
@@ -83,7 +83,7 @@ public class JDinkController {
 		new IObjectFilter<JDinkSprite>() {
 			@Override
 			public boolean matches(JDinkSprite sprite) {
-				return (sprite.isActive()) && (sprite.isVisible());
+				return (sprite.isActive()) && (!sprite.isDisabled()) && (sprite.isVisible());
 			}
 	};
 

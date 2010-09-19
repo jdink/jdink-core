@@ -92,6 +92,7 @@ import de.siteof.jdink.functions.script.sprite.JDinkSpBrainParam2Function;
 import de.siteof.jdink.functions.script.sprite.JDinkSpBrainParamFunction;
 import de.siteof.jdink.functions.script.sprite.JDinkSpDefenseFunction;
 import de.siteof.jdink.functions.script.sprite.JDinkSpDirFunction;
+import de.siteof.jdink.functions.script.sprite.JDinkSpDisabledFunction;
 import de.siteof.jdink.functions.script.sprite.JDinkSpDistanceFunction;
 import de.siteof.jdink.functions.script.sprite.JDinkSpEditorNumFunction;
 import de.siteof.jdink.functions.script.sprite.JDinkSpExpFunction;
@@ -460,6 +461,7 @@ public class JDinkApp {
 		context.addFunction("sp_brain", new JDinkSpBrainFunction());
 		context.addFunction("sp_brain_parm", new JDinkSpBrainParamFunction());
 		context.addFunction("sp_brain_parm2", new JDinkSpBrainParam2Function());
+		context.addFunction("sp_disabled", new JDinkSpDisabledFunction());
 		context.addFunction("sp_editor_num", new JDinkSpEditorNumFunction());
 		context.addFunction("sp_frame", new JDinkSpFrameFunction());
 		context.addFunction("sp_frame_delay", new JDinkSpFrameDelayFunction());
