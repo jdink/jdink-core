@@ -822,7 +822,10 @@ public class JDinkCLoader extends AbstractLoader {
 							break;
 						}
 						//log.debug("generate get-argument? (due to argument combination - " + token + "): " + previousToken);
-						currentParseContext.getCall().addArgument(getTokenAsArgument(previousToken));
+						if (previousToken != null) {
+							currentParseContext.getCall().addArgument(getTokenAsArgument(previousToken));
+							previousToken = null;
+						}
 					}
 					JDinkScriptFunctionCall modificatorCall = getModificatorCall(token);
 					if (modificatorCall != null) {
