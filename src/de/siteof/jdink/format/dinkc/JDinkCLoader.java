@@ -153,6 +153,9 @@ public class JDinkCLoader extends AbstractLoader {
 	private static final String QUOTE_BEGIN_STRING = "\"";
 	private static final String QUOTE_END_STRING = "\"";
 
+	private static final String CHOICE_START = "choice_start";
+	private static final String CHOICE_END = "choice_end";
+
 	private JDinkContext context;
 	private final String separatingChars;
 	private final String operatorChars;
@@ -866,7 +869,7 @@ public class JDinkCLoader extends AbstractLoader {
 						this.pushParseContext(oldParseContext);
 						//currentParseContext.setCall(oldParseContext.getCall());
 						currentParseContext.setState(STATE_CALL_END);
-						if (oldParseContext.getCall().getFunctionName().equals("choice_start")) {
+						if (oldParseContext.getCall().getFunctionName().equals(CHOICE_START)) {
 							choiceStartScriptFunctionCall = oldParseContext.getCall();
 							choiceArguments = new ArrayList<Object>();
 							processStatementEnd();
@@ -916,7 +919,7 @@ public class JDinkCLoader extends AbstractLoader {
 					processStatementEnd();
 					break;
 				case STATE_CHOICE_BODY:
-					if (token.equals("choice_end")) {
+					if (token.equals(CHOICE_END)) {
 						currentParseContext.setState(STATE_DEFINITION_FUNCTION_BODY);
 						while (choiceStartScriptFunctionCall.getArgumentCount() > 0) {
 							choiceStartScriptFunctionCall.popArgument();
@@ -928,30 +931,42 @@ public class JDinkCLoader extends AbstractLoader {
 //						currentParseContext.getCall().setFunctionName(token);
 //						currentParseContext.setState(STATE_CALL_FUNCTION_ARGUMENTS_BODY);
 					} else {
-						String choice = line.trim();
-						int quoteStartIndex= choice.indexOf(QUOTE_BEGIN_STRING);
+						String choiceString = line.trim();
+						int quoteStartIndex= choiceString.indexOf(QUOTE_BEGIN_STRING);
 						Object condition = null;
 						if (quoteStartIndex > 0) {
-							String conditionString = choice.substring(0, quoteStartIndex);
+							String conditionString = choiceString.substring(0, quoteStartIndex);
 							condition = parseCondition(lineNo, conditionString);
-							choice = choice.substring(quoteStartIndex);
+							choiceString = choiceString.substring(quoteStartIndex);
 						}
-						if ((choice.length() >= 2) &&
-								(choice.startsWith(QUOTE_BEGIN_STRING)) &&
-								(choice.endsWith(QUOTE_END_STRING))) {
-							choice = choice.substring(
+						Object choiceArgument;
+						if ((choiceString.length() >= 2) &&
+								(choiceString.startsWith(QUOTE_BEGIN_STRING)) &&
+								(choiceString.endsWith(QUOTE_END_STRING))) {
+							choiceString = choiceString.substring(
 									QUOTE_BEGIN_STRING.length(),
-									choice.length() - QUOTE_END_STRING.length());
+									choiceString.length() - QUOTE_END_STRING.length());
+							choiceArgument = choiceString;
+						} else {
+							String[] choiceTokens = choiceString.split(" ");
+							Object[] arguments = new Object[choiceTokens.length];
+							for (int i = 0; i < choiceTokens.length; i++) {
+								if (i == 0) {
+									arguments[i] = choiceTokens[i];
+								} else {
+									arguments[i] = this.getTokenAsArgument(choiceTokens[i]);
+								}
+							}
+							choiceArgument = arguments;
 						}
 						if (condition != null) {
 							JDinkScriptIfFunctionCall call = new JDinkScriptIfFunctionCall();
 							call.setLineNo(this.lineNo);
 							call.addArgument(condition);
-							call.addArgument(choice);
-							choiceArguments.add(call);
-						} else {
-							choiceArguments.add(choice);
+							call.addArgument(choiceArgument);
+							choiceArgument = call;
 						}
+						choiceArguments.add(choiceArgument);
 					}
 					return;
 				default:

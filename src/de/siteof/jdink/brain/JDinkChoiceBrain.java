@@ -15,6 +15,7 @@ import de.siteof.jdink.control.JDinkController;
 import de.siteof.jdink.events.JDinkKeyConstants;
 import de.siteof.jdink.events.JDinkKeyEvent;
 import de.siteof.jdink.functions.JDinkExecutionContext;
+import de.siteof.jdink.model.JDinkColorIndex;
 import de.siteof.jdink.model.JDinkContext;
 import de.siteof.jdink.model.JDinkSprite;
 import de.siteof.jdink.model.JDinkSpriteHelper;
@@ -63,10 +64,12 @@ public class JDinkChoiceBrain extends AbstractJDinkBrain {
 
 	private final static String CHOICE_MENU_VIEW_KEY = "brain.choice.view";
 
-//	public final static String CHOICES_SPRITES_VAR_NAME = "brain.choice.choices";
-//	public final static String CHOICES_RESULT_VAR_NAME = "brain.choice.result";
+	private final static String SET_Y = "set_y";
+	private final static String SET_TITLE_COLOR = "set_title_color";
+	private final static String TITLE_START = "title_start";
+	private final static String TITLE_END = "title_end";
 
-	public final static String SELECTED_PREFIX = "`%";
+	public final static String SELECTED_PREFIX = JDinkColorIndex.getColorString(15);
 
 	private static JDinkChoiceBrain instance = new JDinkChoiceBrain();
 
@@ -148,27 +151,29 @@ public class JDinkChoiceBrain extends AbstractJDinkBrain {
 			Object[] choiceArguments) throws Throwable {
 		JDinkContext context = executionContext.getContext();
 		hideChoiceMenu(context);
-		List<String> actualChoices = new ArrayList<String>(choiceArguments.length);
+		List<Object> actualChoicesArguments = new ArrayList<Object>(choiceArguments.length);
 		for (int i = 0; i < choiceArguments.length; i++) {
 			if (log.isDebugEnabled()) {
 				log.debug("choice[" + i + "]: " + choiceArguments[i]);
 			}
 			Object choiceArgument = executionContext.asValue(choiceArguments[i]);
 			if (choiceArgument != null) {
-
-				actualChoices.add(processPlaceholders(
-						executionContext, i, choiceArgument.toString()));
+				if (choiceArgument instanceof String) {
+					choiceArgument = processPlaceholders(
+							executionContext, i, (String) choiceArgument);
+				}
+				actualChoicesArguments.add(choiceArgument);
 			} else {
 				if (log.isInfoEnabled()) {
 					log.info("ignoring not applicable choice item: " + choiceArguments[i]);
 				}
-				actualChoices.add(null);
+				actualChoicesArguments.add(null);
 			}
 		}
-		if (actualChoices.size() == 0) {
+		if (actualChoicesArguments.size() == 0) {
 			log.debug("choice arguments empty");
 		}
-		log.info("actualChoices=" + actualChoices);
+		log.info("actualChoices=" + actualChoicesArguments);
 		JDinkController controller = context.getController();
 		JDinkSpriteHelper spriteHelper = context.getSpriteHelper();
 		JDinkSpriteLayer spriteLayer = controller.addNewSpriteLayer();
@@ -188,14 +193,14 @@ public class JDinkChoiceBrain extends AbstractJDinkBrain {
 			sprite.setVisible(true);
 		}
 
-		Map<Integer, Integer> choiceBySpriteNumberMap = new HashMap<Integer, Integer>(actualChoices.size());
-		List<JDinkSprite> choicesSprites = new ArrayList<JDinkSprite>(actualChoices.size());
+		Map<Integer, Integer> choiceBySpriteNumberMap = new HashMap<Integer, Integer>(actualChoicesArguments.size());
+		List<JDinkSprite> choicesSprites = new ArrayList<JDinkSprite>(actualChoicesArguments.size());
 		int textX = x + 169;
 		boolean first = true;
 		int choiceIndex = 1;
 		int choiceCount = 0;
-		for (String choice: actualChoices) {
-			if (choice != null) {
+		for (Object choice: actualChoicesArguments) {
+			if ((choice != null) && (choice instanceof String)) {
 				choiceCount++;
 			}
 		}
@@ -203,40 +208,72 @@ public class JDinkChoiceBrain extends AbstractJDinkBrain {
 		int maxHeight = JDinkSpriteUtil.getBounds(context, sprites.get(1)).getBounds().getHeight();
 		int textHeight = Math.min(30, (maxHeight - 10) / choiceCount);
 		int textY = y + 42 + 20 - 20 + (maxHeight - textHeight * choiceCount) / 2;
+		int titleY = y + 42 + 20;
+		int titleColor = 0;
+		boolean titleMode = false;
 
-		for (String choice: actualChoices) {
-			if (choice != null) {
-				String text = choice;
-				if (first) {
-					text = JDinkChoiceBrain.SELECTED_PREFIX + text;
-					first = false;
+		for (Object choice: actualChoicesArguments) {
+			if (choice == null) {
+				choiceIndex++;
+			} else if (choice instanceof Object[]) {
+				Object[] a = (Object[]) choice;
+				if (a.length > 0) {
+					if (SET_Y.equals(a[0])) {
+						if ((a.length >= 2) && (a[1] instanceof Integer)) {
+							textY = ((Integer) a[1]).intValue();
+						} else {
+							log.warn("[showChoiceMenuAndWait] integer parameter expected for set_y");
+						}
+					} else if (SET_TITLE_COLOR.equals(a[0])) {
+						if ((a.length >= 2) && (a[1] instanceof Integer)) {
+							titleColor = ((Integer) a[1]).intValue();
+						} else {
+							log.warn("[showChoiceMenuAndWait] integer parameter expected for set_y");
+						}
+					} else {
+						String s = a[0].toString();
+						int pos = s.indexOf('(');
+						String functionName = s.substring(0, pos).trim();
+						if (TITLE_START.equals(functionName)) {
+							titleMode = true;
+						} else if (TITLE_END.equals(functionName)) {
+							titleMode = false;
+						}
+					}
 				}
-				JDinkSprite textSprite = spriteHelper.showText(executionContext,
-						text,
-						Integer.valueOf(textX), Integer.valueOf(textY));
-				if (textSprite != null) {
-					choicesSprites.add(textSprite);
-					choiceBySpriteNumberMap.put(Integer.valueOf(textSprite.getSpriteNumber()),
-							Integer.valueOf(choiceIndex));
+			} else if (choice instanceof String) {
+				String text = choice.toString();
+				if (titleMode) {
+					if (titleColor > 0) {
+						text = JDinkColorIndex.getColorString(titleColor) + text;
+					}
+					spriteHelper.showText(executionContext,
+							text,
+							Integer.valueOf(textX), Integer.valueOf(titleY));
+					titleY += textHeight;
+				} else {
+					if (first) {
+						text = JDinkChoiceBrain.SELECTED_PREFIX + text;
+						first = false;
+					}
+					JDinkSprite textSprite = spriteHelper.showText(executionContext,
+							text,
+							Integer.valueOf(textX), Integer.valueOf(textY));
+					if (textSprite != null) {
+						choicesSprites.add(textSprite);
+						choiceBySpriteNumberMap.put(Integer.valueOf(textSprite.getSpriteNumber()),
+								Integer.valueOf(choiceIndex));
+					}
+					textY += textHeight;
+					choiceIndex++;
 				}
-				textY += textHeight;
 			}
-			choiceIndex++;
 		}
 		view.setChoicesSprites(choicesSprites);
-//		int[] choiceSpriteNumbers = new int[choicesSprites.size()];
-//		for (int i = 0; i < choiceSpriteNumbers.length; i++) {
-//			choiceSpriteNumbers[i] = choicesSprites.get(i).getSpriteNumber();
-//		}
 
 		JDinkSprite choiceSprite = sprites.get(0);
-//		JDinkScope scope = choiceSprite.requestScope(context);
-//		scope.addInternalVariable(JDinkChoiceBrain.CHOICES_SPRITES_VAR_NAME,
-//				new JDinkVariable(JDinkObjectType.getObjectTypeInstance(
-//						choiceSpriteNumbers.getClass()), choiceSpriteNumbers));
 		JDinkVariable resultVariable = new JDinkVariable(JDinkIntegerType.getInstance(), null);
 		view.setResultVariable(resultVariable);
-//		scope.addInternalVariable(JDinkChoiceBrain.CHOICES_RESULT_VAR_NAME, resultVariable);
 		choiceSprite.setBrain(JDinkChoiceBrain.getInstance());
 
 		controller.setChanged(true);
@@ -274,33 +311,7 @@ public class JDinkChoiceBrain extends AbstractJDinkBrain {
 		return result;
 	}
 
-//	private JDinkSprite[] getChoicesSprites(JDinkSprite sprite, JDinkContext context) {
-//		JDinkSprite[] result = null;
-//		JDinkScope spriteScope = requestSpriteScope(sprite, context);
-//		JDinkVariable choicesSpritesVariable = spriteScope.getInternalVariable(
-//				CHOICES_SPRITES_VAR_NAME);
-//		if (choicesSpritesVariable != null) {
-//			Object value = choicesSpritesVariable.getValue();
-//			if (value instanceof int[]) {
-//				int[] a = (int[]) value;
-//				JDinkSprite[] sprites = new JDinkSprite[a.length];
-//				for (int i = 0; i < a.length; i++) {
-//					sprites[i] = context.getController().getSprite(a[i], false);
-//				}
-//				result = sprites;
-//			} else {
-//				log.warn("integer array expected");
-//			}
-//		} else {
-//			log.warn("choices variable not found");
-//		}
-//		return result;
-//	}
-
 	private void setSelectionResult(JDinkSprite sprite, JDinkContext context, int selectedSpriteNumber) {
-//		JDinkScope spriteScope = requestSpriteScope(sprite, context);
-//		JDinkVariable choicesResultVariable = spriteScope.getInternalVariable(
-//				CHOICES_RESULT_VAR_NAME);
 		View view = context.getMetaData(CHOICE_MENU_VIEW_KEY, View.class);
 		if (view != null) {
 			JDinkVariable choicesResultVariable = view.getResultVariable();

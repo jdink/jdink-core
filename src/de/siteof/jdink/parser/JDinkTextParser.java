@@ -2,6 +2,7 @@ package de.siteof.jdink.parser;
 
 import java.util.Iterator;
 
+import de.siteof.jdink.model.JDinkColorIndex;
 import de.siteof.jdink.model.JDinkTextFragment;
 
 public class JDinkTextParser {
@@ -32,54 +33,7 @@ public class JDinkTextParser {
 					if (pos > 0) {
 						endPos = pos;
 					} else {
-						int colorIndex = -1;
-						switch (text.charAt(pos + 1)) {
-						case '1':
-							colorIndex = 1;
-							break;
-						case '2':
-							colorIndex = 2;
-							break;
-						case '3':
-							colorIndex = 3;
-							break;
-						case '4':
-							colorIndex = 4;
-							break;
-						case '5':
-							colorIndex = 5;
-							break;
-						case '6':
-							colorIndex = 6;
-							break;
-						case '7':
-							colorIndex = 7;
-							break;
-						case '8':
-							colorIndex = 8;
-							break;
-						case '9':
-							colorIndex = 9;
-							break;
-						case '0':
-							colorIndex = 10;
-							break;
-						case '!':
-							colorIndex = 11;
-							break;
-						case '@':
-							colorIndex = 12;
-							break;
-						case '#':
-							colorIndex = 13;
-							break;
-						case '$':
-							colorIndex = 14;
-							break;
-						case '%':
-							colorIndex = 15;
-							break;
-						}
+						int colorIndex = JDinkColorIndex.getColorIndex(text.charAt(pos + 1));
 						if (colorIndex >= 0) {
 							currentPos += 2;
 							pos = text.indexOf('`', currentPos);
