@@ -45,6 +45,7 @@ import de.siteof.jdink.view.ColorConstants;
 import de.siteof.jdink.view.JDinkImage;
 import de.siteof.jdink.view.JDinkImageFactory;
 import de.siteof.jdink.view.JDinkView;
+import de.siteof.task.ITaskManager;
 
 /**
  * <p>Contains the context of the game. Mostly static information about the game.</p>
@@ -68,6 +69,7 @@ public class JDinkContext {
 		new HashMap<JDinkSequenceFrameKey, JDinkSequenceFrameAttributes>();
 	private JDinkScope globalScope = new JDinkScope();
 	private JDinkController controller;
+	private ITaskManager taskManager;
 	private JDinkView view;
 	private JDinkImageFactory imageLoader;
 	private final Map<String, JDinkScriptFile> scriptFileMap =
@@ -664,5 +666,13 @@ public class JDinkContext {
 
 	public JDinkGlobalVariables getGlobalVariables() {
 		return globalVariables;
+	}
+
+	public ITaskManager getTaskManager() {
+		return taskManager;
+	}
+
+	public void setTaskManager(ITaskManager taskManager) {
+		this.taskManager = taskManager;
 	}
 }

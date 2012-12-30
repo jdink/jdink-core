@@ -8,6 +8,8 @@ public class JDinkPlayer {
 
 	private int basePush;
 	private JDinkScope scope;
+	private int pushDirectionIndex;
+	private long pushStartTime;
 
 	private final JDinkItemStore itemStore = new JDinkItemStore();
 	private final JDinkItemStore magicItemStore = new JDinkItemStore();
@@ -48,6 +50,14 @@ public class JDinkPlayer {
 		return magicItemStore.setItem(itemNumber, item);
 	}
 
+	public boolean isPushing() {
+		return (pushDirectionIndex != 0);
+	}
+
+	public void clearPushing() {
+		this.pushDirectionIndex = 0;
+	}
+
 	// plain getter/setter
 
 	public int getBasePush() {
@@ -76,6 +86,22 @@ public class JDinkPlayer {
 
 	public JDinkItemStore getMagicItemStore() {
 		return magicItemStore;
+	}
+
+	public int getPushDirectionIndex() {
+		return pushDirectionIndex;
+	}
+
+	public void setPushDirectionIndex(int pushDirectionIndex) {
+		this.pushDirectionIndex = pushDirectionIndex;
+	}
+
+	public long getPushStartTime() {
+		return pushStartTime;
+	}
+
+	public void setPushStartTime(long pushTime) {
+		this.pushStartTime = pushTime;
 	}
 
 }

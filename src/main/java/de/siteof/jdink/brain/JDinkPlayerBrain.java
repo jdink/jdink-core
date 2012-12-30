@@ -19,10 +19,8 @@ import de.siteof.jdink.model.JDinkDirectionIndexConstants;
 import de.siteof.jdink.model.JDinkItem;
 import de.siteof.jdink.model.JDinkMapTransition;
 import de.siteof.jdink.model.JDinkPlayer;
-import de.siteof.jdink.model.JDinkSequence;
 import de.siteof.jdink.model.JDinkSprite;
 import de.siteof.jdink.script.util.JDinkScriptUtil;
-import de.siteof.jdink.util.debug.JDinkObjectOutputUtil;
 
 /**
  * <p>Brain: 1</p>
@@ -103,7 +101,7 @@ public class JDinkPlayerBrain extends AbstractJDinkBrain {
 			up		= false;
 			down	= false;
 		}
-		if (sprite.isNoControl()) {
+		if ((sprite.isNoControl()) || (sprite.isFrozen())) {
 			left	= false;
 			right	= false;
 			up		= false;
@@ -190,6 +188,7 @@ public class JDinkPlayerBrain extends AbstractJDinkBrain {
 //		if ((deltaX != 0) && (deltaY != null))
 
 		JDinkSprite collisionSprite = null;
+		boolean wasCollision = false;
 
 		if ((deltaX != 0) || (deltaY != 0)) {
 			// we got a direction, check whether nothing is blocking us
@@ -210,6 +209,7 @@ public class JDinkPlayerBrain extends AbstractJDinkBrain {
 					if (collision instanceof JDinkSpriteCollision) {
 						collisionSprite = ((JDinkSpriteCollision) collision).getSprite();
 					}
+					wasCollision = true;
 					break;
 				}
 			}
@@ -217,32 +217,68 @@ public class JDinkPlayerBrain extends AbstractJDinkBrain {
 			sprite.setY(y);
 		}
 
-		int sequenceNumber;
-		if ((deltaX != 0) || (deltaY != 0)) {
-			// walking
-			sequenceNumber = sprite.getBaseWalk() + sprite.getDirectionIndex();
-		} else if (sprite.getBaseIdle() > 0) {
-			// idle
-			sequenceNumber = sprite.getBaseIdle() + sprite.getDirectionIndex();
+		JDinkPlayer player = context.getPlayer(sprite);
+
+		if ((player != null) && (in_this_base(sprite.getAnimationSequenceNumber(), player.getBasePush()))) {
+			// still pushing
 		} else {
-			// no base idle set
-//			sequenceNumber = sprite.getBaseWalk() + sprite.getDirectionIndex();
-			sequenceNumber = 0;
-		}
-		if ((sequenceNumber > 0) && (sequenceNumber != sprite.getAnimationSequenceNumber())) {
-			if ((sprite.getAnimationSequenceNumber() == 0) ||
-					(in_this_base(sprite.getAnimationSequenceNumber(), sprite.getBaseWalk())) ||
-					(in_this_base(sprite.getAnimationSequenceNumber(), sprite.getBaseIdle()))) {
-				setAnimationSequence(context, sprite, sequenceNumber);
+			int sequenceNumber;
+			boolean pushing = false;
+			if ((deltaX != 0) || (deltaY != 0)) {
+				// walking
+				if (wasCollision) {
+					if (player != null) {
+						if (player.getPushDirectionIndex() != sprite.getDirectionIndex()) {
+							player.setPushDirectionIndex(sprite.getDirectionIndex());
+							player.setPushStartTime(context.getTime());
+						}
+					}
+				} else {
+					if (player != null) {
+						player.clearPushing();
+					}
+				}
+				if ((player != null) && (player.isPushing()) && (player.getPushStartTime() + 600 <= context.getTime())) {
+					// pushing
+					pushing = true;
+					if (player.getBasePush() > 0) {
+						sequenceNumber = player.getBasePush() + sprite.getDirectionIndex();
+					} else {
+						sequenceNumber = sprite.getBaseWalk() + sprite.getDirectionIndex();
+					}
+				} else {
+					sequenceNumber = sprite.getBaseWalk() + sprite.getDirectionIndex();
+				}
+			} else if (sprite.getBaseIdle() > 0) {
+				// idle
+				sequenceNumber = sprite.getBaseIdle() + sprite.getDirectionIndex();
+			} else {
+				// no base idle set
+	//			sequenceNumber = sprite.getBaseWalk() + sprite.getDirectionIndex();
+				sequenceNumber = 0;
 			}
-			context.getController().setChanged(true);
-		}
-		if (directionIndex > 0) {
-			JDinkMapTransition transition = context.getController().getMapTransition(context, sprite);
-			if (transition != null) {
-				context.getController().setMapTransition(context, sprite, transition);
+			if ((sequenceNumber > 0) && (sequenceNumber != sprite.getAnimationSequenceNumber())) {
+				if ((sprite.getAnimationSequenceNumber() == 0) ||
+						(in_this_base(sprite.getAnimationSequenceNumber(), sprite.getBaseWalk())) ||
+						(in_this_base(sprite.getAnimationSequenceNumber(), sprite.getBaseIdle()))) {
+					setAnimationSequence(context, sprite, sequenceNumber);
+				}
+				context.getController().notifyChanged(sprite, JDinkController.ALL_CHANGE);
 			}
-			context.getController().setChanged(true);
+
+			if ((directionIndex > 0) && (!pushing)) {
+				JDinkMapTransition transition = context.getController().getMapTransition(context, sprite);
+				if (transition != null) {
+					context.getController().setMapTransition(context, sprite, transition);
+				}
+				context.getController().setChanged(true);
+			}
+
+			if (pushing) {
+				if (!context.getInteractionManager().interact(
+						JDinkInteractionType.PUSH, context, sprite)) {
+				}
+			}
 		}
 
 		if (!sprite.isNoControl()) {

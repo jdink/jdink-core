@@ -949,15 +949,23 @@ public class JDinkCLoader extends AbstractLoader {
 							choiceArgument = choiceString;
 						} else {
 							String[] choiceTokens = choiceString.split(" ");
-							Object[] arguments = new Object[choiceTokens.length];
-							for (int i = 0; i < choiceTokens.length; i++) {
-								if (i == 0) {
-									arguments[i] = choiceTokens[i];
-								} else {
-									arguments[i] = this.getTokenAsArgument(choiceTokens[i]);
+							if ((choiceTokens.length > 0) &&
+									((choiceTokens[0].indexOf('_') > 0) || (choiceTokens[0].indexOf('(') > 0))) {
+								Object[] arguments = new Object[choiceTokens.length];
+								for (int i = 0; i < choiceTokens.length; i++) {
+									if (i == 0) {
+										arguments[i] = choiceTokens[i];
+									} else {
+										if (choiceTokens[i].isEmpty()) {
+											log.debug("choice is empty");
+										}
+										arguments[i] = this.getTokenAsArgument(choiceTokens[i]);
+									}
 								}
+								choiceArgument = arguments;
+							} else {
+								choiceArgument = choiceString;
 							}
-							choiceArgument = arguments;
 						}
 						if (condition != null) {
 							JDinkScriptIfFunctionCall call = new JDinkScriptIfFunctionCall();

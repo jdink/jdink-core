@@ -127,6 +127,7 @@ import de.siteof.jdink.interaction.JDinkHitInteractionHandler;
 import de.siteof.jdink.interaction.JDinkInteractionHandler;
 import de.siteof.jdink.interaction.JDinkInteractionManager;
 import de.siteof.jdink.interaction.JDinkInteractionType;
+import de.siteof.jdink.interaction.JDinkPushInteractionHandler;
 import de.siteof.jdink.interaction.JDinkTalkInteractionHandler;
 import de.siteof.jdink.interaction.JDinkTouchInteractionHandler;
 import de.siteof.jdink.loader.JDinkFileManager;
@@ -323,6 +324,7 @@ public class JDinkApp {
 				DINK_CONFIGURATION_PROPERTY_NAME, "config/dink.properties");
 
 		context = new JDinkContext();
+		context.setTaskManager(taskManager);
 		context.setController(new JDinkController());
 		context.getController().setMousePosition(new JDinkPoint(0, 0));
 		context.setFontColors(initFontColors(new int[16]));
@@ -396,6 +398,7 @@ public class JDinkApp {
 		handlers.put(JDinkInteractionType.TALK, new JDinkTalkInteractionHandler());
 		handlers.put(JDinkInteractionType.HIT, new JDinkHitInteractionHandler());
 		handlers.put(JDinkInteractionType.TOUCH, new JDinkTouchInteractionHandler());
+		handlers.put(JDinkInteractionType.PUSH, new JDinkPushInteractionHandler());
 		context.setInteractionManager(new JDinkInteractionManager(handlers));
 
 		// see update_frame for list of brain types
